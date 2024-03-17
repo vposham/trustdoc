@@ -1,0 +1,20 @@
+version: "2"
+sql:
+  - schema: "internal/db/migration"
+    queries: "internal/db/query"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "raw"
+        out: "internal/db/sqlc/raw"
+        emit_prepared_queries: true
+        emit_interface: true
+        emit_exact_table_names: false
+        emit_empty_slices: true
+        emit_exported_queries: false
+        emit_json_tags: true
+        json_tags_case_style: "camel"
+        output_db_file_name: "db_gen.go"
+        output_models_file_name: "models_gen.go"
+        output_querier_file_name: "querier_gen.go"
+        output_files_suffix: "_gen"

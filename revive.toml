@@ -1,0 +1,67 @@
+ignoreGeneratedHeader = false
+severity = "warning"
+confidence = 0.7
+errorCode = 0
+warningCode = 0
+
+[rule.cyclomatic]
+    arguments = [12]
+[rule.blank-imports]
+[rule.context-as-argument]
+    severity = "error"
+[rule.context-keys-type]
+[rule.dot-imports]
+[rule.error-return]
+[rule.error-strings]
+[rule.error-naming]
+[rule.exported]
+    arguments = ["disableStutteringCheck"]
+[rule.if-return]
+[rule.increment-decrement]
+[rule.var-naming]
+    arguments = [["ID"], []]
+[rule.var-declaration]
+[rule.package-comments]
+[rule.range]
+[rule.receiver-naming]
+[rule.time-naming]
+    severity = "error"
+[rule.unexported-return]
+[rule.indent-error-flow]
+[rule.errorf]
+[rule.empty-block]
+[rule.superfluous-else]
+[rule.unused-parameter]
+[rule.unreachable-code]
+    severity = "error"
+[rule.redefines-builtin-id]
+[rule.argument-limit]
+    arguments =[6]
+    severity = "error"
+[rule.bool-literal-in-expr]
+    severity = "error"
+[rule.cognitive-complexity]
+    arguments =[10]
+[rule.confusing-naming]
+    severity = "error"
+[rule.confusing-results]
+[rule.constant-logical-expr]
+[rule.duplicated-imports]
+[rule.early-return]
+[rule.function-result-limit]
+    arguments =[3]
+[rule.function-length]
+    arguments =[0,80]
+    severity = "error"
+[rule.import-shadowing]
+[rule.line-length-limit]
+    arguments =[120]
+    severity = "error"
+[rule.modifies-value-receiver]
+[rule.nested-structs]
+[rule.string-of-int]
+[rule.struct-tag]
+[rule.time-equal]
+[rule.unconditional-recursion]
+[rule.unnecessary-stmt]
+[rule.useless-break]
