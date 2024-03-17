@@ -1,6 +1,6 @@
 // internal/bc/contracts/DocumentToken.sol
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.6.8;
+pragma solidity >0.8.0 < 0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
@@ -40,34 +40,21 @@ contract DocumentToken is ERC721 {
         return newItemId;
     }
 
-    function verify(
+    function verifyDocument(
+        uint256 _tokenId,
         string memory _docId,
         string memory _docHash,
         string memory _ownerName
     ) public view returns (bool) {
-        for (uint256 i = 1; i <= _tokenIds.current(); i++) {
-            Document storage doc = _documents[i];
-            if (
-                keccak256(abi.encodePacked(doc.docId)) ==
-                keccak256(abi.encodePacked(_docId)) &&
-                keccak256(abi.encodePacked(doc.docHash)) ==
-                keccak256(abi.encodePacked(_docHash)) &&
-                keccak256(abi.encodePacked(doc.ownerName)) ==
-                keccak256(abi.encodePacked(_ownerName))
-            ) {
-                return true;
-            }
-        }
-        return false;
+        Document storage doc = _documents[_tokenId];
+        return (
+            keccak256(abi.encodePacked(doc.docId)) == keccak256(abi.encodePacked(_docId)) &&
+            keccak256(abi.encodePacked(doc.docHash)) == keccak256(abi.encodePacked(_docHash)) &&
+            keccak256(abi.encodePacked(doc.ownerName)) == keccak256(abi.encodePacked(_ownerName))
+        );
     }
 
-    function docUploadedAt(string memory _docId) public view returns (uint256) {
-        for (uint256 i = 1; i <= _tokenIds.current(); i++) {
-            Document storage doc = _documents[i];
-            if (keccak256(abi.encodePacked(doc.docId)) == keccak256(abi.encodePacked(_docId))) {
-                return doc.uploadedAt;
-            }
-        }
-        revert("document not found");
+    function getDocumentUploadedAt(uint256 _tokenId) public view returns (uint256) {
+        return _documents[_tokenId].uploadedAt;
     }
 }

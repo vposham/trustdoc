@@ -10,7 +10,6 @@ import (
 )
 
 func TestGetHealth(t *testing.T) {
-	t.Setenv("appEnv", "test")
 	router := gin.New()
 	gin.SetMode(gin.TestMode)
 	router.GET("/health", GetHealth)

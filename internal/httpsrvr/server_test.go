@@ -17,7 +17,7 @@ func TestCreateServer(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	ctx := context.Background()
 	t.Setenv("appEnv", "test")
-	assert.NoError(t, config.Load(ctx, "../../resources"))
+	assert.NoError(t, config.Load(ctx, "../../config"))
 	assert.NoError(t, log.Load(ctx))
 	assert.NoError(t, dbtx.Load(ctx))
 	assert.NoError(t, handler.Load(ctx))

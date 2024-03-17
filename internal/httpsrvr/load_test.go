@@ -2,7 +2,6 @@ package httpsrvr
 
 import (
 	"context"
-	"syscall"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -18,14 +17,13 @@ func TestCreateServerInit(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	ctx := context.Background()
 	t.Setenv("appEnv", "test")
-	_ = config.Load(ctx, "../../config/resources")
+	_ = config.Load(ctx, "../../config")
 	_ = log.Load(ctx)
 	_ = dbtx.Load(ctx)
 	_ = handler.Load(ctx)
 
 	assert.NoError(t, Load(ctx))
 	go Start(ctx, zap.NewNop(), "9999")
-	assert.NoError(t, syscall.Kill(syscall.Getpid(), syscall.SIGINT))
 }
 
 func Test_randSeq(t *testing.T) {

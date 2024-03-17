@@ -7,7 +7,7 @@ endif
 
 test:
 	go clean -testcache && \
-	go test -count=1 -race -shuffle=on `go list ./... | grep -v internal/db/sqlc/raw` -cover
+	go test -count=1 -race -shuffle=on `go list ./... | grep -v internal/db/sqlc/raw | grep -v internal/bc/contracts` -cover
 
 runApp:
 	export appEnv=local && go run main.go
@@ -102,7 +102,29 @@ perf:
 ##########################################  SECURITY FIXES  ####################################################
 
 # ups updates all minor and security fixes - Running this resolves Security issues
-ups: goups
+ups: goUps npmUps
 
-goups:
+goUps:
 	go get -t -u ./... && go mod tidy
+
+npmUps:
+	npm i -g npm-check-updates && npm i
+
+# npmUpsMjr updates all deps including major changes which needs code changes.
+npmUpsMjr:
+	npm i -g npm-check-updates && ncu -u && npm i
+
+##########################################  COMPILE AND GO GEN CONTRACTS  ####################################################
+
+sol2go: solc abigen cln
+
+solc:
+	solc --base-path ./ --include-path node_modules --abi internal/bc/contracts/DocumentToken.sol -o internal/bc/contracts --overwrite
+
+abigen:
+	abigen --abi internal/bc/contracts/DocumentToken.abi --pkg contracts --type DocumentToken --out internal/bc/contracts/DocumentToken.go
+
+cln:
+	rm -r internal/bc/contracts/*.abi
+
+##########################################  CONTAINERIZE  ####################################################

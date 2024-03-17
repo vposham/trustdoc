@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	}()
 	_ = os.Setenv("appEnv", "test")
 	ctx := context.Background()
-	_ = config.Load(ctx, "../../../resources")
+	_ = config.Load(ctx, "../../../../config")
 	_ = log.Load(ctx)
 	_ = Load(ctx)
 

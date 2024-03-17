@@ -15,9 +15,9 @@ type Document struct {
 	Title          string         `json:"title"`
 	Description    sql.NullString `json:"description"`
 	FileName       string         `json:"fileName"`
+	BlockchainHash string         `json:"blockchainHash"`
 	UploadedBy     int64          `json:"uploadedBy"`
 	ModifiedAt     time.Time      `json:"modifiedAt"`
-	BlockchainHash string         `json:"blockchainHash"`
 	UploadedAt     time.Time      `json:"uploadedAt"`
 	LastUpdatedAt  time.Time      `json:"lastUpdatedAt"`
 }

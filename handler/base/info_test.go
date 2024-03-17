@@ -10,7 +10,6 @@ import (
 )
 
 func TestGetInfo(t *testing.T) {
-	t.Setenv("appEnv", "test")
 	router := gin.New()
 	gin.SetMode(gin.TestMode)
 	router.GET("/info", GetInfo)

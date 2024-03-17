@@ -16,7 +16,7 @@ func TestLogConf(t *testing.T) {
 		t.Setenv("appEnv", "test")
 
 		ctx := context.Background()
-		assert.NoError(t, config.Load(ctx, "./../resources"))
+		assert.NoError(t, config.Load(ctx, "../config"))
 		err := Load(ctx)
 		assert.NoError(t, err, "err not expected")
 

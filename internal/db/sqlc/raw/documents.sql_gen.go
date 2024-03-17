@@ -13,7 +13,7 @@ import (
 const addDoc = `-- name: AddDoc :one
 INSERT INTO documents (doc_id, title, description, file_name, uploaded_by, blockchain_hash)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id, doc_id, title, description, file_name, uploaded_by, modified_at, blockchain_hash, uploaded_at, last_updated_at
+RETURNING id, doc_id, title, description, file_name, blockchain_hash, uploaded_by, modified_at, uploaded_at, last_updated_at
 `
 
 type AddDocParams struct {
@@ -41,9 +41,9 @@ func (q *Queries) AddDoc(ctx context.Context, arg AddDocParams) (Document, error
 		&i.Title,
 		&i.Description,
 		&i.FileName,
+		&i.BlockchainHash,
 		&i.UploadedBy,
 		&i.ModifiedAt,
-		&i.BlockchainHash,
 		&i.UploadedAt,
 		&i.LastUpdatedAt,
 	)
@@ -51,7 +51,7 @@ func (q *Queries) AddDoc(ctx context.Context, arg AddDocParams) (Document, error
 }
 
 const getDoc = `-- name: GetDoc :one
-SELECT id, doc_id, title, description, file_name, uploaded_by, modified_at, blockchain_hash, uploaded_at, last_updated_at
+SELECT id, doc_id, title, description, file_name, blockchain_hash, uploaded_by, modified_at, uploaded_at, last_updated_at
 FROM documents
 WHERE doc_id = $1
 LIMIT 1
@@ -66,9 +66,9 @@ func (q *Queries) GetDoc(ctx context.Context, docID string) (Document, error) {
 		&i.Title,
 		&i.Description,
 		&i.FileName,
+		&i.BlockchainHash,
 		&i.UploadedBy,
 		&i.ModifiedAt,
-		&i.BlockchainHash,
 		&i.UploadedAt,
 		&i.LastUpdatedAt,
 	)
