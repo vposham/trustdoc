@@ -46,7 +46,7 @@ type ServeConf struct {
 	DocH *handler.DocH
 }
 
-// Load enables us enable/disable specific endpoints from app configurations
+// Load enables us inject this package as dependency from its parent
 func Load(ctx context.Context) error {
 	var appErr error
 	onceInit.Do(func() {
@@ -59,13 +59,12 @@ func loadImpls(_ context.Context) error {
 	logger := log.GetConfiguredLogger()
 	if concreteImpls[httpSrvrImplKey] == nil {
 		randStr, _ := randSeq(6)
-
 		p := config.GetAll()
 		l := logio.LogImpl{
 			HeaderBlackList: []string{"authorization"},
-			LogReqBody:      true,
-			LogRespBody:     true,
-			LogHeaders:      true,
+			LogReqBody:      p.MustGetBool("log.http.req.body"),
+			LogRespBody:     p.MustGetBool("log.http.resp.body"),
+			LogHeaders:      p.MustGetBool("log.http.req.headers"),
 		}
 
 		concreteImpls[httpSrvrImplKey] = ServeConf{
@@ -119,7 +118,7 @@ func Start(ctx context.Context, logger *zap.Logger, port string) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		logger.Fatal("Server forced to shutdown: ", zap.Error(err))
+		logger.Fatal("server forced to shutdown: ", zap.Error(err))
 	}
 
 	logger.Info("server exiting")

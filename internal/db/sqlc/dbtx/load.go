@@ -1,4 +1,4 @@
-// Package tx will contain the interfaces and implementations of DB transactions, dependency loading functionality etc
+// Package dbtx will contain the interfaces and implementations of DB transactions, dependency loading functionality etc
 package dbtx
 
 import (
@@ -19,7 +19,7 @@ const (
 	dbExecKey = "PostgresConfiguredExecKey"
 )
 
-// Load enables us enable/disable specific endpoints from app configurations
+// Load enables us inject this package as dependency from its parent
 func Load(ctx context.Context) error {
 	var appErr error
 	onceInit.Do(func() {

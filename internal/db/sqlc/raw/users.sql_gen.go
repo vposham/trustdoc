@@ -10,32 +10,32 @@ import (
 )
 
 const addUser = `-- name: AddUser :one
-INSERT INTO users (user_id, first_name, last_name, is_active)
+INSERT INTO users (email_id, first_name, last_name, status)
 VALUES ($1, $2, $3, $4)
-RETURNING id, user_id, first_name, last_name, is_active, created_at, last_updated_at
+RETURNING id, email_id, first_name, last_name, status, created_at, last_updated_at
 `
 
 type AddUserParams struct {
-	UserID    string `json:"userId"`
-	FirstName string `json:"firstName"`
-	LastName  string `json:"lastName"`
-	IsActive  bool   `json:"isActive"`
+	EmailID   string   `json:"emailId"`
+	FirstName string   `json:"firstName"`
+	LastName  string   `json:"lastName"`
+	Status    UserType `json:"status"`
 }
 
 func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (User, error) {
 	row := q.queryRow(ctx, q.addUserStmt, addUser,
-		arg.UserID,
+		arg.EmailID,
 		arg.FirstName,
 		arg.LastName,
-		arg.IsActive,
+		arg.Status,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.UserID,
+		&i.EmailID,
 		&i.FirstName,
 		&i.LastName,
-		&i.IsActive,
+		&i.Status,
 		&i.CreatedAt,
 		&i.LastUpdatedAt,
 	)
@@ -43,21 +43,21 @@ func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (User, error) 
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, user_id, first_name, last_name, is_active, created_at, last_updated_at
+SELECT id, email_id, first_name, last_name, status, created_at, last_updated_at
 FROM users
-WHERE user_id = $1
+WHERE email_id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, userID string) (User, error) {
-	row := q.queryRow(ctx, q.getUserStmt, getUser, userID)
+func (q *Queries) GetUser(ctx context.Context, emailID string) (User, error) {
+	row := q.queryRow(ctx, q.getUserStmt, getUser, emailID)
 	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.UserID,
+		&i.EmailID,
 		&i.FirstName,
 		&i.LastName,
-		&i.IsActive,
+		&i.Status,
 		&i.CreatedAt,
 		&i.LastUpdatedAt,
 	)

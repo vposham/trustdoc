@@ -1,8 +1,8 @@
-# CONTAINER_ENGINE is set to either podman or docker. prefers podman over docker.
+# CRT (container runtime) is set to either podman or docker. prefers podman over docker.
 ifeq ($(shell command -v podman 2> /dev/null),)
-	CONTAINER_ENGINE=docker
+	CRT=docker
 else
-    CONTAINER_ENGINE=podman
+    CRT=podman
 endif
 
 test:
@@ -16,16 +16,16 @@ killApp:
 	lsof -i:8080 -Fp | head -n 1 | sed 's/^p//' | xargs kill
 
 dbInstanceUp:
-	${CONTAINER_ENGINE} run --name local-db -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine && sleep 5
+	${CRT} run --name local-db -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine && sleep 5
 
 dbInstanceDown:
-	${CONTAINER_ENGINE} stop local-db && ${CONTAINER_ENGINE} rm local-db
+	${CRT} rm -f local-db
 
 createDb:
-	${CONTAINER_ENGINE} exec -it local-db createdb --username=root --owner=root doc_db
+	${CRT} exec -it local-db createdb --username=root --owner=root doc_db
 
 dropDb:
-	${CONTAINER_ENGINE} exec -it local-db dropdb doc_db
+	${CRT} exec -it local-db dropdb doc_db
 
 migrateUp:
 	migrate -path internal/db/migration -database "postgresql://root:secret@localhost:5432/doc_db?sslmode=disable" -verbose up
@@ -34,7 +34,7 @@ migrateDown:
 	migrate -path internal/db/migration -database "postgresql://root:secret@localhost:5432/doc_db?sslmode=disable" -verbose down
 
 resetDbData:
-	${CONTAINER_ENGINE} exec -it local-db psql -U root -d postgres -c "DROP DATABASE IF EXISTS doc_db" && \
+	${CRT} exec -it local-db psql -U root -d postgres -c "DROP DATABASE IF EXISTS doc_db" && \
 	make create-db && \
 	make migrate-up && \
 	make load-test-data-for-local
@@ -47,23 +47,38 @@ sqlc:
 ##########################################  BLOB STORE - MINIO  ####################################################
 minioUp:
 	mkdir -p ./minioData && \
-	${CONTAINER_ENGINE} run -p 9000:9000 -p 9001:9001 --name minio -v ./minioData:/data -e "MINIO_ROOT_USER=minio" -e "MINIO_ROOT_PASSWORD=CHANGEME123" quay.io/minio/minio server /data --console-address ":9001"
+	${CRT} run -p 9000:9000 -p 9001:9001 --name minio -v ./minioData:/data -e "MINIO_ROOT_USER=minio" -e "MINIO_ROOT_PASSWORD=CHANGEME123" -e "MINIO_ACCESS_KEY=minio_access_key" -e "MINIO_SECRET_KEY=minio_secret_key" -d minio/minio server /data --console-address ":9001" && sleep 5
 
 minioDown:
-	${CONTAINER_ENGINE} stop minio && ${CONTAINER_ENGINE} rm minio
+	${CRT} rm -f minio
+
+minioBkt:
+	${CRT} exec -it minio mc alias set myminio http://localhost:9000 minio CHANGEME123 && \
+	${CRT} exec -it minio mc mb myminio/docs-store && \
+	${CRT} exec -it minio mc anonymous set public myminio/docs-store
 
 minioPurge:
 	rm -rf ./minioData
 
 ##########################################  BUILD AND RUN ####################################################
-start-all: dbInstanceUp \
+
+startAll: dbInstanceUp \
 		   createDb  \
 		   migrateUp \
 		   minioUp \
+		   minioBkt \
 		   runApp
 
-stop-all: killApp \
-		  dbInstanceDown
+stopAll: killApp \
+		 minioDown \
+		 dbInstanceDown \
+		 minioPurge
+
+infra: dbInstanceUp \
+		   createDb  \
+		   migrateUp \
+		   minioUp \
+		   minioBkt
 
 ##########################################  LINTING  ####################################################
 

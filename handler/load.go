@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/vposham/trustdoc/internal/blob"
 	"github.com/vposham/trustdoc/internal/db/sqlc/dbtx"
 )
 
@@ -36,11 +37,15 @@ func loadImpls(ctx context.Context) error {
 		}
 
 		// load blob layer
+		if err := blob.Load(ctx); err != nil {
+			return err
+		}
 
 		// load blockchain layer
 
 		concreteImpls[docHandlerImplKey] = &DocH{
-			Db: dbtx.GetDbStore(),
+			Db:   dbtx.GetDbStore(),
+			Blob: blob.GetBlobStore(),
 		}
 	}
 	return nil

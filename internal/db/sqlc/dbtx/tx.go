@@ -1,4 +1,4 @@
-// Package tx consists of the DB transactions implementation which includes the executeTrx and executeTrxWithRetry
+// Package dbtx consists of the DB transactions implementation which includes the executeTrx and executeTrxWithRetry
 package dbtx
 
 import (

@@ -6,28 +6,73 @@ package raw
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 )
 
+type UserType string
+
+const (
+	UserTypeACTIVE      UserType = "ACTIVE"
+	UserTypeINACTIVE    UserType = "INACTIVE"
+	UserTypeSOFTDELETED UserType = "SOFT_DELETED"
+)
+
+func (e *UserType) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = UserType(s)
+	case string:
+		*e = UserType(s)
+	default:
+		return fmt.Errorf("unsupported scan type for UserType: %T", src)
+	}
+	return nil
+}
+
+type NullUserType struct {
+	UserType UserType `json:"userType"`
+	Valid    bool     `json:"valid"` // Valid is true if UserType is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullUserType) Scan(value interface{}) error {
+	if value == nil {
+		ns.UserType, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.UserType.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullUserType) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.UserType), nil
+}
+
 type Document struct {
-	ID             int64          `json:"id"`
-	DocID          string         `json:"docId"`
-	Title          string         `json:"title"`
-	Description    sql.NullString `json:"description"`
-	FileName       string         `json:"fileName"`
-	BlockchainHash string         `json:"blockchainHash"`
-	UploadedBy     int64          `json:"uploadedBy"`
-	ModifiedAt     time.Time      `json:"modifiedAt"`
-	UploadedAt     time.Time      `json:"uploadedAt"`
-	LastUpdatedAt  time.Time      `json:"lastUpdatedAt"`
+	ID            int64          `json:"id"`
+	DocID         string         `json:"docId"`
+	Title         string         `json:"title"`
+	Description   sql.NullString `json:"description"`
+	FileName      string         `json:"fileName"`
+	DocHash       string         `json:"docHash"`
+	DocMintedID   string         `json:"docMintedId"`
+	UserID        int64          `json:"userId"`
+	UploadedAt    time.Time      `json:"uploadedAt"`
+	LastUpdatedAt time.Time      `json:"lastUpdatedAt"`
 }
 
 type User struct {
 	ID            int64     `json:"id"`
-	UserID        string    `json:"userId"`
+	EmailID       string    `json:"emailId"`
 	FirstName     string    `json:"firstName"`
 	LastName      string    `json:"lastName"`
-	IsActive      bool      `json:"isActive"`
+	Status        UserType  `json:"status"`
 	CreatedAt     time.Time `json:"createdAt"`
 	LastUpdatedAt time.Time `json:"lastUpdatedAt"`
 }

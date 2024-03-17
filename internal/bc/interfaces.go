@@ -1,6 +1,5 @@
 package bc
 
 type OpsIf interface {
-	Sign(docId, docHash, ownerName string) (signature string, err error)
-	Verify(docId, docHash, ownerName string) (valid bool, err error)
+	Sign(docId, docMd5Hash, ownerEmailMd5Hash string) (tknId string, err error)
 }

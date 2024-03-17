@@ -15,6 +15,10 @@ import (
 func (s ServeConf) CreateServer(c context.Context) *gin.Engine {
 
 	router := gin.New()
+
+	// use this to limit file upload sizes
+	router.MaxMultipartMemory = 8 << 20 // 8 MiB
+
 	router.Use(gin.Recovery())
 	s.addDefaultEndpoints(router)
 	s.addProfiling(router)
@@ -60,6 +64,6 @@ func (s ServeConf) addBusinessEndpoints(c context.Context, router *gin.Engine) {
 	// create a group for all endpoints which contains business logic and
 	entRtr := intVerRtr.Group("/doc")
 
-	entRtr.GET("/upload", base.GetInfo)        // s.DocH.
-	entRtr.GET("/:docId/verify", base.GetInfo) // s.DocH.
+	entRtr.POST("/upload", s.DocH.Upload)
+	entRtr.POST("/:docId/verify", s.DocH.Verify)
 }

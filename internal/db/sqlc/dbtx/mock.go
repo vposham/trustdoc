@@ -8,7 +8,7 @@ type MockStore struct {
 	getDocMetaFn  func(ctx context.Context, docId string) (DocMeta, error)
 }
 
-var _ StoreIf = &MockStore{}
+var _ StoreIf = (*MockStore)(nil)
 
 // SaveDocMeta - mock implementation of it for unit testing
 func (m MockStore) SaveDocMeta(ctx context.Context, in DocMeta) error {

@@ -12,7 +12,7 @@ type Querier interface {
 	AddDoc(ctx context.Context, arg AddDocParams) (Document, error)
 	AddUser(ctx context.Context, arg AddUserParams) (User, error)
 	GetDoc(ctx context.Context, docID string) (Document, error)
-	GetUser(ctx context.Context, userID string) (User, error)
+	GetUser(ctx context.Context, emailID string) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

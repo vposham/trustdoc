@@ -31,7 +31,7 @@ var (
 
 // DocumentTokenMetaData contains all meta data concerning the DocumentToken contract.
 var DocumentTokenMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"}],\"name\":\"getDocumentUploadedAt\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_docId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_docHash\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_ownerName\",\"type\":\"string\"}],\"name\":\"mintDocument\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"_docId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_docHash\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_ownerName\",\"type\":\"string\"}],\"name\":\"verifyDocument\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"approved\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"ApprovalForAll\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"getApproved\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_tokenId\",\"type\":\"uint256\"}],\"name\":\"getDocument\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"owner\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"}],\"name\":\"isApprovedForAll\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"_docId\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_docMd5Hash\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"_ownerEmailIdMd5Hash\",\"type\":\"string\"}],\"name\":\"mintDocument\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"ownerOf\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"name\":\"safeTransferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"operator\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"approved\",\"type\":\"bool\"}],\"name\":\"setApprovalForAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"tokenURI\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // DocumentTokenABI is the input ABI used to generate the binding from.
@@ -242,35 +242,38 @@ func (_DocumentToken *DocumentTokenCallerSession) GetApproved(tokenId *big.Int) 
 	return _DocumentToken.Contract.GetApproved(&_DocumentToken.CallOpts, tokenId)
 }
 
-// GetDocumentUploadedAt is a free data retrieval call binding the contract method 0x360d45f7.
+// GetDocument is a free data retrieval call binding the contract method 0x3f9b250a.
 //
-// Solidity: function getDocumentUploadedAt(uint256 _tokenId) view returns(uint256)
-func (_DocumentToken *DocumentTokenCaller) GetDocumentUploadedAt(opts *bind.CallOpts, _tokenId *big.Int) (*big.Int, error) {
+// Solidity: function getDocument(uint256 _tokenId) view returns(string, string, string, uint256)
+func (_DocumentToken *DocumentTokenCaller) GetDocument(opts *bind.CallOpts, _tokenId *big.Int) (string, string, string, *big.Int, error) {
 	var out []interface{}
-	err := _DocumentToken.contract.Call(opts, &out, "getDocumentUploadedAt", _tokenId)
+	err := _DocumentToken.contract.Call(opts, &out, "getDocument", _tokenId)
 
 	if err != nil {
-		return *new(*big.Int), err
+		return *new(string), *new(string), *new(string), *new(*big.Int), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+	out0 := *abi.ConvertType(out[0], new(string)).(*string)
+	out1 := *abi.ConvertType(out[1], new(string)).(*string)
+	out2 := *abi.ConvertType(out[2], new(string)).(*string)
+	out3 := *abi.ConvertType(out[3], new(*big.Int)).(**big.Int)
 
-	return out0, err
+	return out0, out1, out2, out3, err
 
 }
 
-// GetDocumentUploadedAt is a free data retrieval call binding the contract method 0x360d45f7.
+// GetDocument is a free data retrieval call binding the contract method 0x3f9b250a.
 //
-// Solidity: function getDocumentUploadedAt(uint256 _tokenId) view returns(uint256)
-func (_DocumentToken *DocumentTokenSession) GetDocumentUploadedAt(_tokenId *big.Int) (*big.Int, error) {
-	return _DocumentToken.Contract.GetDocumentUploadedAt(&_DocumentToken.CallOpts, _tokenId)
+// Solidity: function getDocument(uint256 _tokenId) view returns(string, string, string, uint256)
+func (_DocumentToken *DocumentTokenSession) GetDocument(_tokenId *big.Int) (string, string, string, *big.Int, error) {
+	return _DocumentToken.Contract.GetDocument(&_DocumentToken.CallOpts, _tokenId)
 }
 
-// GetDocumentUploadedAt is a free data retrieval call binding the contract method 0x360d45f7.
+// GetDocument is a free data retrieval call binding the contract method 0x3f9b250a.
 //
-// Solidity: function getDocumentUploadedAt(uint256 _tokenId) view returns(uint256)
-func (_DocumentToken *DocumentTokenCallerSession) GetDocumentUploadedAt(_tokenId *big.Int) (*big.Int, error) {
-	return _DocumentToken.Contract.GetDocumentUploadedAt(&_DocumentToken.CallOpts, _tokenId)
+// Solidity: function getDocument(uint256 _tokenId) view returns(string, string, string, uint256)
+func (_DocumentToken *DocumentTokenCallerSession) GetDocument(_tokenId *big.Int) (string, string, string, *big.Int, error) {
+	return _DocumentToken.Contract.GetDocument(&_DocumentToken.CallOpts, _tokenId)
 }
 
 // IsApprovedForAll is a free data retrieval call binding the contract method 0xe985e9c5.
@@ -459,37 +462,6 @@ func (_DocumentToken *DocumentTokenCallerSession) TokenURI(tokenId *big.Int) (st
 	return _DocumentToken.Contract.TokenURI(&_DocumentToken.CallOpts, tokenId)
 }
 
-// VerifyDocument is a free data retrieval call binding the contract method 0xc646eea0.
-//
-// Solidity: function verifyDocument(uint256 _tokenId, string _docId, string _docHash, string _ownerName) view returns(bool)
-func (_DocumentToken *DocumentTokenCaller) VerifyDocument(opts *bind.CallOpts, _tokenId *big.Int, _docId string, _docHash string, _ownerName string) (bool, error) {
-	var out []interface{}
-	err := _DocumentToken.contract.Call(opts, &out, "verifyDocument", _tokenId, _docId, _docHash, _ownerName)
-
-	if err != nil {
-		return *new(bool), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
-
-	return out0, err
-
-}
-
-// VerifyDocument is a free data retrieval call binding the contract method 0xc646eea0.
-//
-// Solidity: function verifyDocument(uint256 _tokenId, string _docId, string _docHash, string _ownerName) view returns(bool)
-func (_DocumentToken *DocumentTokenSession) VerifyDocument(_tokenId *big.Int, _docId string, _docHash string, _ownerName string) (bool, error) {
-	return _DocumentToken.Contract.VerifyDocument(&_DocumentToken.CallOpts, _tokenId, _docId, _docHash, _ownerName)
-}
-
-// VerifyDocument is a free data retrieval call binding the contract method 0xc646eea0.
-//
-// Solidity: function verifyDocument(uint256 _tokenId, string _docId, string _docHash, string _ownerName) view returns(bool)
-func (_DocumentToken *DocumentTokenCallerSession) VerifyDocument(_tokenId *big.Int, _docId string, _docHash string, _ownerName string) (bool, error) {
-	return _DocumentToken.Contract.VerifyDocument(&_DocumentToken.CallOpts, _tokenId, _docId, _docHash, _ownerName)
-}
-
 // Approve is a paid mutator transaction binding the contract method 0x095ea7b3.
 //
 // Solidity: function approve(address to, uint256 tokenId) returns()
@@ -513,23 +485,23 @@ func (_DocumentToken *DocumentTokenTransactorSession) Approve(to common.Address,
 
 // MintDocument is a paid mutator transaction binding the contract method 0xa3a7fd6e.
 //
-// Solidity: function mintDocument(string _docId, string _docHash, string _ownerName) returns(uint256)
-func (_DocumentToken *DocumentTokenTransactor) MintDocument(opts *bind.TransactOpts, _docId string, _docHash string, _ownerName string) (*types.Transaction, error) {
-	return _DocumentToken.contract.Transact(opts, "mintDocument", _docId, _docHash, _ownerName)
+// Solidity: function mintDocument(string _docId, string _docMd5Hash, string _ownerEmailIdMd5Hash) returns(uint256)
+func (_DocumentToken *DocumentTokenTransactor) MintDocument(opts *bind.TransactOpts, _docId string, _docMd5Hash string, _ownerEmailIdMd5Hash string) (*types.Transaction, error) {
+	return _DocumentToken.contract.Transact(opts, "mintDocument", _docId, _docMd5Hash, _ownerEmailIdMd5Hash)
 }
 
 // MintDocument is a paid mutator transaction binding the contract method 0xa3a7fd6e.
 //
-// Solidity: function mintDocument(string _docId, string _docHash, string _ownerName) returns(uint256)
-func (_DocumentToken *DocumentTokenSession) MintDocument(_docId string, _docHash string, _ownerName string) (*types.Transaction, error) {
-	return _DocumentToken.Contract.MintDocument(&_DocumentToken.TransactOpts, _docId, _docHash, _ownerName)
+// Solidity: function mintDocument(string _docId, string _docMd5Hash, string _ownerEmailIdMd5Hash) returns(uint256)
+func (_DocumentToken *DocumentTokenSession) MintDocument(_docId string, _docMd5Hash string, _ownerEmailIdMd5Hash string) (*types.Transaction, error) {
+	return _DocumentToken.Contract.MintDocument(&_DocumentToken.TransactOpts, _docId, _docMd5Hash, _ownerEmailIdMd5Hash)
 }
 
 // MintDocument is a paid mutator transaction binding the contract method 0xa3a7fd6e.
 //
-// Solidity: function mintDocument(string _docId, string _docHash, string _ownerName) returns(uint256)
-func (_DocumentToken *DocumentTokenTransactorSession) MintDocument(_docId string, _docHash string, _ownerName string) (*types.Transaction, error) {
-	return _DocumentToken.Contract.MintDocument(&_DocumentToken.TransactOpts, _docId, _docHash, _ownerName)
+// Solidity: function mintDocument(string _docId, string _docMd5Hash, string _ownerEmailIdMd5Hash) returns(uint256)
+func (_DocumentToken *DocumentTokenTransactorSession) MintDocument(_docId string, _docMd5Hash string, _ownerEmailIdMd5Hash string) (*types.Transaction, error) {
+	return _DocumentToken.Contract.MintDocument(&_DocumentToken.TransactOpts, _docId, _docMd5Hash, _ownerEmailIdMd5Hash)
 }
 
 // SafeTransferFrom is a paid mutator transaction binding the contract method 0x42842e0e.

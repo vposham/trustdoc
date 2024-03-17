@@ -1,4 +1,4 @@
-package dbtx
+package blob
 
 import (
 	"context"
@@ -18,13 +18,13 @@ func TestMain(m *testing.M) {
 	}()
 	_ = os.Setenv("appEnv", "test")
 	ctx := context.Background()
-	_ = config.Load(ctx, "../../../../config")
+	_ = config.Load(ctx, "../../config")
 	_ = log.Load(ctx)
 	_ = Load(ctx)
 
 	os.Exit(m.Run())
 }
 
-func TestGetDbStore(t *testing.T) {
-	assert.NotNil(t, GetDbStore())
+func TestGetBlobStore(t *testing.T) {
+	assert.NotNil(t, GetBlobStore())
 }

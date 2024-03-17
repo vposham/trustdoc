@@ -35,9 +35,9 @@ func Load(ctx context.Context) error {
 	return appErr
 }
 
-// loadImpls calls function in od-go/v2/jlog.DefaultConfig to initialize zapBaseLogger
+// loadImpls calls DefaultConfig to initialize zapBaseLogger
 //
-//	zapConf is modified depending on environment and properties by calling jlog.CustomizeLogger
+//	zapConf is modified depending on environment and properties by calling CustomizeLogger
 //
 // Multiple times modification of the zapConf and multi initialization of zapBaseLogger
 // is avoided by the protection provided by onceInit

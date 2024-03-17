@@ -11,8 +11,8 @@ contract DocumentToken is ERC721 {
 
     struct Document {
         string docId;
-        string docHash;
-        string ownerName;
+        string docMd5Hash;
+        string ownerEmailIdMd5Hash;
         uint256 uploadedAt;
     }
 
@@ -22,16 +22,16 @@ contract DocumentToken is ERC721 {
 
     function mintDocument(
         string memory _docId,
-        string memory _docHash,
-        string memory _ownerName
+        string memory _docMd5Hash,
+        string memory _ownerEmailIdMd5Hash
     ) public returns (uint256) {
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
 
         _documents[newItemId] = Document({
             docId: _docId,
-            docHash: _docHash,
-            ownerName: _ownerName,
+            docMd5Hash: _docMd5Hash,
+            ownerEmailIdMd5Hash: _ownerEmailIdMd5Hash,
             uploadedAt: block.timestamp
         });
 
@@ -40,21 +40,8 @@ contract DocumentToken is ERC721 {
         return newItemId;
     }
 
-    function verifyDocument(
-        uint256 _tokenId,
-        string memory _docId,
-        string memory _docHash,
-        string memory _ownerName
-    ) public view returns (bool) {
+    function getDocument(uint256 _tokenId) public view returns (string memory, string memory, string memory, uint256) {
         Document storage doc = _documents[_tokenId];
-        return (
-            keccak256(abi.encodePacked(doc.docId)) == keccak256(abi.encodePacked(_docId)) &&
-            keccak256(abi.encodePacked(doc.docHash)) == keccak256(abi.encodePacked(_docHash)) &&
-            keccak256(abi.encodePacked(doc.ownerName)) == keccak256(abi.encodePacked(_ownerName))
-        );
-    }
-
-    function getDocumentUploadedAt(uint256 _tokenId) public view returns (uint256) {
-        return _documents[_tokenId].uploadedAt;
+        return (doc.docId, doc.docMd5Hash, doc.ownerEmailIdMd5Hash, doc.uploadedAt);
     }
 }
