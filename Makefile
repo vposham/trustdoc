@@ -7,7 +7,7 @@ endif
 
 test:
 	go clean -testcache && \
-	go test -count=1 -race -shuffle=on `go list ./... | grep -v db/sqlc/raw` -cover
+	go test -count=1 -race -shuffle=on `go list ./... | grep -v internal/db/sqlc/raw` -cover
 
 runApp:
 	export appEnv=local && go run main.go
@@ -101,8 +101,8 @@ perf:
 
 ##########################################  SECURITY FIXES  ####################################################
 
-# ups updates all minor and security fixes - Running this resolves Snyk issues
-ups: goups npmups
+# ups updates all minor and security fixes - Running this resolves Security issues
+ups: goups
 
 goups:
 	go get -t -u ./... && go mod tidy

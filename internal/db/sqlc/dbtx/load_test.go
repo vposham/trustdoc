@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// skipCI is in place to skip unit tests in CICD - only use it for the ones which need a DB
+// skipCI is in place to skip unit tests in environments  where local DB isnt feasible
 // todo use in future
 func skipCI(t *testing.T) {
 
