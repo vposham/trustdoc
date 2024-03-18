@@ -92,6 +92,12 @@ func loadImpls(ctx context.Context) error {
 			receiptWaitMaxDuration: 30 * time.Second,
 		}
 
+		if props.MustGetBool("skip.blockchain.contract.install") {
+			var kOps OpsIf = &k
+			concreteImpls[bcExecKey] = kOps
+			return nil
+		}
+
 		cAdd, err := k.InstallContract(ctx)
 		if err != nil {
 			return fmt.Errorf("failed contractAddress install contract: %w", err)

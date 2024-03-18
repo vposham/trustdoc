@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/vposham/trustdoc/config"
+	"github.com/vposham/trustdoc/internal/bc"
 	"github.com/vposham/trustdoc/internal/db/sqlc/dbtx"
 	"github.com/vposham/trustdoc/log"
 )
@@ -23,6 +24,7 @@ func TestMain(m *testing.M) {
 	_ = config.Load(ctx, "../config")
 	_ = log.Load(ctx)
 	_ = dbtx.Load(ctx)
+	_ = bc.Load(ctx)
 	_ = Load(ctx)
 
 	os.Exit(m.Run())
