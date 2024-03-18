@@ -4,12 +4,12 @@ package main
 import (
 	"context"
 
-	"github.com/vposham/trustdoc/internal/httpsrvr/mwares/reqlogger"
 	"go.uber.org/zap"
 
 	"github.com/vposham/trustdoc/config"
 	"github.com/vposham/trustdoc/handler"
 	"github.com/vposham/trustdoc/internal/httpsrvr"
+	"github.com/vposham/trustdoc/internal/httpsrvr/mwares/reqlogger"
 	"github.com/vposham/trustdoc/log"
 )
 

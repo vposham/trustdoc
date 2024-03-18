@@ -4,15 +4,15 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
 	"github.com/vposham/trustdoc/internal/db/sqlc/dbtx"
 	"github.com/vposham/trustdoc/log"
 	"github.com/vposham/trustdoc/pkg/rest"
-	"go.uber.org/zap"
 )
 
 func (d *DocH) Upload(c *gin.Context) {
@@ -23,7 +23,7 @@ func (d *DocH) Upload(c *gin.Context) {
 	// parse the request
 	req, err := d.uploadReq(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "req validation failed - " + err.Error()})
+		c.JSON(http.StatusBadRequest, uploadResp(nil, fmt.Errorf("req validation failed - %w", err)))
 		return
 	}
 
@@ -33,7 +33,7 @@ func (d *DocH) Upload(c *gin.Context) {
 		exists = true
 	} else {
 		if !errors.Is(err, sql.ErrNoRows) {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to find doc in db - " + err.Error()})
+			c.JSON(http.StatusInternalServerError, uploadResp(nil, fmt.Errorf("unable to find doc in db - %w", err)))
 			return
 		}
 		exists = false
@@ -41,7 +41,7 @@ func (d *DocH) Upload(c *gin.Context) {
 	logger.Info("doc exists check", zap.String("docId", doc.DocId), zap.Bool("docExists", exists))
 
 	if exists {
-		c.JSON(http.StatusOK, gin.H{"message": "file already exists" + doc.DocId})
+		c.JSON(http.StatusOK, uploadResp(&doc, nil))
 		return
 	}
 
@@ -49,19 +49,19 @@ func (d *DocH) Upload(c *gin.Context) {
 	f, _ := req.MpFileHeader.Open()
 	docId, err := d.Blob.Put(c, f, req.MpFileHeader.Size)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to store in blob store - " + err.Error()})
+		c.JSON(http.StatusInternalServerError,
+			uploadResp(nil, fmt.Errorf("unable to store in blob store - %w", err)))
 		return
 	}
 
 	// mint a new tkn in blockchain
 	bcTknId, err := d.Bc.MintDocTkn(c, docId, req.DocMd5Hash, req.OwnerEmailMd5Hash)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to sign in blockchain - " + err.Error()})
+		c.JSON(http.StatusInternalServerError, uploadResp(nil, fmt.Errorf("unable to sign in blockchain - %w", err)))
 		return
 	}
 
-	// store the metadata in db
-	err = d.Db.SaveDocMeta(c, dbtx.DocMeta{
+	doc = dbtx.DocMeta{
 		DocId:          docId,
 		OwnerEmail:     req.OwnerEmail,
 		DocTitle:       req.DocTitle,
@@ -71,13 +71,16 @@ func (d *DocH) Upload(c *gin.Context) {
 		DocName:        req.MpFileHeader.Filename,
 		OwnerFirstName: req.OwnerFirstName,
 		OwnerLastName:  req.OwnerLastName,
-	})
+	}
+
+	// store the metadata in db
+	err = d.Db.SaveDocMeta(c, doc)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to persist to db" + err.Error()})
+		c.JSON(http.StatusInternalServerError, uploadResp(nil, fmt.Errorf("unable to persist to db - %w", err)))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "file uploaded successfully"})
+	c.JSON(http.StatusOK, uploadResp(&doc, nil))
 }
 
 func (d *DocH) uploadReq(c *gin.Context) (*rest.UploadReq, error) {
@@ -110,20 +113,9 @@ func (d *DocH) uploadReq(c *gin.Context) (*rest.UploadReq, error) {
 	return &req, nil
 }
 
-func (d *DocH) Download(c *gin.Context) {
-	docId := c.Param("docId")
-
-	doc, err := d.Blob.Get(c, docId)
+func uploadResp(doc *dbtx.DocMeta, err error) *rest.UploadResp {
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to find file" + err.Error()})
-		return
+		return &rest.UploadResp{Error: err.Error()}
 	}
-
-	c.Header("Content-Disposition", "attachment; filename="+docId)
-	c.Header("Content-Type", "application/octet-stream")
-	_, err = io.Copy(c.Writer, doc)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to find file" + err.Error()})
-		return
-	}
+	return &rest.UploadResp{Doc: doc}
 }

@@ -9,16 +9,16 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	ethrpc "github.com/ethereum/go-ethereum/rpc"
-	"github.com/vposham/trustdoc/internal/bc/contracts"
 	"go.uber.org/zap"
 
 	"github.com/vposham/trustdoc/config"
+	"github.com/vposham/trustdoc/internal/bc/contracts"
 	"github.com/vposham/trustdoc/log"
 )
 
@@ -45,6 +45,7 @@ func loadImpls(ctx context.Context) error {
 	props := config.GetAll()
 	if concreteImpls[bcExecKey] == nil {
 		url := props.MustGetString("kaleido.node.api.url")
+		logger := log.GetLogger(ctx)
 
 		// load private signing keys
 		privKey := props.MustGetString("kaleido.ext.sign.priv.key")
@@ -66,12 +67,9 @@ func loadImpls(ctx context.Context) error {
 		}
 
 		fromAdd := ethcrypto.PubkeyToAddress(signKey.PublicKey)
+		logger.Info("fromAdd", zap.String("fromAdd", fromAdd.String()))
 
 		ethCl := ethclient.NewClient(rpcClient)
-		nonce, err := ethCl.PendingNonceAt(ctx, fromAdd)
-		if err != nil {
-			return fmt.Errorf("failed to get nonce: %w", err)
-		}
 
 		gasPrice, err := ethCl.SuggestGasPrice(ctx)
 		if err != nil {
@@ -79,21 +77,29 @@ func loadImpls(ctx context.Context) error {
 		}
 
 		k := Kaleido{
-			account:      fromAdd,
-			privateKey:   signKey,
-			signer:       types.NewEIP155Signer(big.NewInt(chainId)),
-			nonce:        nonce,
-			amount:       0,
-			gasLimitOnTx: props.MustGetInt64("max.gas.per.tx"),
-			gasPrice:     gasPrice,
-			ethCl:        ethclient.NewClient(rpcClient),
+			rpc:                    rpcClient,
+			from:                   &fromAdd,
+			privateKey:             signKey,
+			signer:                 types.NewEIP155Signer(big.NewInt(chainId)),
+			amount:                 0,
+			contractAddress:        nil, // updated below after contract creation
+			gasLimitOnTx:           props.MustGetInt64("max.gas.per.tx"),
+			gasPrice:               gasPrice,
+			ethCl:                  ethclient.NewClient(rpcClient),
+			docTkn:                 nil,
+			rpcTimeout:             45 * time.Second,
+			receiptWaitMinDuration: 10 * time.Second,
+			receiptWaitMaxDuration: 30 * time.Second,
 		}
 
-		toKey := props.MustGetString("kaleido.account.key")
-		address := common.HexToAddress(toKey)
-		k.to = &address
+		cAdd, err := k.InstallContract(ctx)
+		if err != nil {
+			return fmt.Errorf("failed contractAddress install contract: %w", err)
+		}
+		k.contractAddress = cAdd
+		logger.Info("contract installed", zap.String("contractAddress", cAdd.Hex()))
 
-		instance, err := contracts.NewDocumentToken(*k.to, ethCl)
+		instance, err := contracts.NewDocumentToken(*k.contractAddress, ethCl)
 		if err != nil {
 			return fmt.Errorf("failed to instantiate a smart contract: %w", err)
 		}

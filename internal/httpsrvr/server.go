@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+
 	"github.com/vposham/trustdoc/handler/base"
 )
 
@@ -62,8 +63,9 @@ func (s ServeConf) addBusinessEndpoints(c context.Context, router *gin.Engine) {
 	// versioning to support http api request interfaces future extensibility.
 	intVerRtr := svcRtr.Group("/v1")
 	// create a group for all endpoints which contains business logic and
-	entRtr := intVerRtr.Group("/doc")
+	docV1Rtr := intVerRtr.Group("/doc")
 
-	entRtr.POST("/upload", s.DocH.Upload)
-	entRtr.POST("/:docId/verify", s.DocH.Verify)
+	docV1Rtr.POST("/upload", s.DocH.Upload)
+	docV1Rtr.GET("/download/:docId", s.DocH.Download)
+	docV1Rtr.POST("/verify", s.DocH.Verify)
 }

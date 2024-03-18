@@ -25,9 +25,9 @@ const (
 	dbRetryCount    = 5
 	dbRetrySleepDur = time.Millisecond * 30
 
-	dbTxLatencyLKey  = "db-tx-latency"
-	dbTxAttemptLKey  = "db-attempt"
-	dbRetrySleepLKey = "db-sleep"
+	dbTxLatencyLKey  = "dbTxLatency"
+	dbTxAttemptLKey  = "dbAttempt"
+	dbRetrySleepLKey = "dbSleep"
 )
 
 var errDbTimeout = errors.New("db timeout")

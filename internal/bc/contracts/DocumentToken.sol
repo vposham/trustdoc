@@ -44,4 +44,14 @@ contract DocumentToken is ERC721 {
         Document storage doc = _documents[_tokenId];
         return (doc.docId, doc.docMd5Hash, doc.ownerEmailIdMd5Hash, doc.uploadedAt);
     }
+
+    function getDocumentContent(uint256 _tokenId) public view returns (string memory) {
+        Document storage doc = _documents[_tokenId];
+        return doc.docMd5Hash;
+    }
+
+    function getDocumentOwner(uint256 _tokenId) public view returns (string memory) {
+        Document storage doc = _documents[_tokenId];
+        return doc.ownerEmailIdMd5Hash;
+    }
 }

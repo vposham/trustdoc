@@ -24,6 +24,5 @@ type Queries interface {
 // StoreIf interface provides all the valid business DB transactions
 type StoreIf interface {
 	SaveDocMeta(ctx context.Context, in DocMeta) error
-	GetDocMeta(ctx context.Context, docId string) (DocMeta, error)
 	GetDocMetaByHash(ctx context.Context, docMd5Hash string) (DocMeta, error)
 }

@@ -12,16 +12,17 @@ import (
 	"github.com/vposham/trustdoc/log"
 )
 
+// DocMeta holds all the metadata for a document in postgres
 type DocMeta struct {
-	DocId          string
-	OwnerEmail     string
-	DocTitle       string
-	DocDesc        string
-	DocName        string
-	DocMd5Hash     string
-	BcTknId        string
-	OwnerFirstName string
-	OwnerLastName  string
+	DocId          string `json:"docId,omitempty"`
+	OwnerEmail     string `json:"ownerEmail,omitempty"`
+	DocTitle       string `json:"docTitle,omitempty"`
+	DocDesc        string `json:"docDesc,omitempty"`
+	DocName        string `json:"docName,omitempty"`
+	DocMd5Hash     string `json:"docMd5Hash,omitempty"`
+	BcTknId        string `json:"bcTknId,omitempty"`
+	OwnerFirstName string `json:"ownerFirstName,omitempty"`
+	OwnerLastName  string `json:"ownerLastName,omitempty"`
 }
 
 func (store *Store) SaveDocMeta(ctx context.Context, in DocMeta) error {
@@ -69,11 +70,6 @@ func (store *Store) GetDocMetaByHash(ctx context.Context, docMd5Hash string) (Do
 		return nil
 	})
 	return m, err
-}
-
-func (store *Store) GetDocMeta(ctx context.Context, docId string) (DocMeta, error) {
-	// TODO implement me
-	panic("implement me")
 }
 
 func chkUsrExists(ctx context.Context, queries Queries, email string) (u *raw.User, exists bool, err error) {

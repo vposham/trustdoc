@@ -43,5 +43,6 @@ func (m *Minio) Get(ctx context.Context, docId string) (doc io.Reader, err error
 		logger.Error("failed to download document", zap.String("docId", docId), zap.Error(err))
 		return
 	}
+	logger.Info("completed downloading document", zap.String("docId", docId))
 	return obj, nil
 }
