@@ -17,6 +17,7 @@ func TestBadLogConf(t *testing.T) {
 		}})
 	assert.NotNil(t, lgr, "bad zap config should default zap prod config")
 }
+
 func TestFetchLogLevels(t *testing.T) {
 	toTestLvls := []string{Debug, Info, Warn, Error, DPanic, Panic, Fatal, ""}
 	for _, v := range toTestLvls {
@@ -25,6 +26,7 @@ func TestFetchLogLevels(t *testing.T) {
 		}
 	}
 }
+
 func TestDefaultConfig(t *testing.T) {
 	got := DefaultConfig()
 	if got == nil {

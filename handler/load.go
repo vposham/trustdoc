@@ -4,8 +4,10 @@ import (
 	"context"
 	"sync"
 
+	"github.com/vposham/trustdoc/internal/bc"
 	"github.com/vposham/trustdoc/internal/blob"
 	"github.com/vposham/trustdoc/internal/db/sqlc/dbtx"
+	"github.com/vposham/trustdoc/internal/hash"
 )
 
 var (
@@ -42,10 +44,15 @@ func loadImpls(ctx context.Context) error {
 		}
 
 		// load blockchain layer
+		if err := bc.Load(ctx); err != nil {
+			return err
+		}
 
 		concreteImpls[docHandlerImplKey] = &DocH{
 			Db:   dbtx.GetDbStore(),
 			Blob: blob.GetBlobStore(),
+			H:    hash.Md5{},
+			Bc:   bc.GetBc(),
 		}
 	}
 	return nil

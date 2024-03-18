@@ -5,9 +5,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+
 	"github.com/vposham/trustdoc/config"
 	"github.com/vposham/trustdoc/internal/httpsrvr/mwares/reqlogger"
-	"go.uber.org/zap"
 )
 
 func TestLogConf(t *testing.T) {

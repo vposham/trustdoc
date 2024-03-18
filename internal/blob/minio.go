@@ -6,9 +6,10 @@ import (
 	"io"
 
 	"github.com/google/uuid"
-	"github.com/minio/minio-go/v7"
-	"github.com/vposham/trustdoc/log"
+	minio "github.com/minio/minio-go/v7"
 	"go.uber.org/zap"
+
+	"github.com/vposham/trustdoc/log"
 )
 
 // Minio blob store implementation

@@ -6,12 +6,11 @@ import (
 	"errors"
 	"fmt"
 
+	"go.uber.org/zap"
+
 	"github.com/vposham/trustdoc/internal/db/sqlc/raw"
 	"github.com/vposham/trustdoc/log"
-	"go.uber.org/zap"
 )
-
-var errNoRec = fmt.Errorf("no records found")
 
 type DocMeta struct {
 	DocId          string
@@ -19,6 +18,8 @@ type DocMeta struct {
 	DocTitle       string
 	DocDesc        string
 	DocName        string
+	DocMd5Hash     string
+	BcTknId        string
 	OwnerFirstName string
 	OwnerLastName  string
 }
@@ -89,8 +90,8 @@ func saveDocMeta(ctx context.Context, queries Queries, in DocMeta, u *raw.User) 
 		Title:       in.DocTitle,
 		Description: sql.NullString{String: in.DocDesc, Valid: true},
 		FileName:    in.DocName,
-		DocHash:     "todo", // TODO
-		DocMintedID: "todo", // TODO
+		DocHash:     in.DocMd5Hash,
+		DocMintedID: in.BcTknId,
 		UserID:      u.ID,
 	}
 	_, err := queries.AddDoc(ctx, arg)
@@ -101,6 +102,7 @@ func saveDocMeta(ctx context.Context, queries Queries, in DocMeta, u *raw.User) 
 	}
 	return nil
 }
+
 func (store *Store) GetDocMeta(ctx context.Context, docId string) (DocMeta, error) {
 	// TODO implement me
 	panic("implement me")

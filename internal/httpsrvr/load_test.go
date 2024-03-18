@@ -6,11 +6,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
+
 	"github.com/vposham/trustdoc/config"
 	"github.com/vposham/trustdoc/handler"
 	"github.com/vposham/trustdoc/internal/db/sqlc/dbtx"
 	"github.com/vposham/trustdoc/log"
-	"go.uber.org/zap"
 )
 
 func TestCreateServerInit(t *testing.T) {

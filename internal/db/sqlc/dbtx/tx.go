@@ -12,9 +12,9 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/sqlc-dev/pqtype"
-	"github.com/vposham/trustdoc/config"
 	"go.uber.org/zap"
 
+	"github.com/vposham/trustdoc/config"
 	"github.com/vposham/trustdoc/internal/db/sqlc/raw"
 	"github.com/vposham/trustdoc/log"
 )

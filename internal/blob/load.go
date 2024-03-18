@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/minio/minio-go/v7"
+	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+
 	"github.com/vposham/trustdoc/config"
 )
 

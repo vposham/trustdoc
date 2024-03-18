@@ -6,11 +6,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+
 	"github.com/vposham/trustdoc/config"
+	"github.com/vposham/trustdoc/handler"
 	"github.com/vposham/trustdoc/internal/db/sqlc/dbtx"
 	"github.com/vposham/trustdoc/log"
-
-	"github.com/vposham/trustdoc/handler"
 )
 
 func TestCreateServer(t *testing.T) {

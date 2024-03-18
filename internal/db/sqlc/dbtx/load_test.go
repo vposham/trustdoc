@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/vposham/trustdoc/config"
 
+	"github.com/vposham/trustdoc/config"
 	"github.com/vposham/trustdoc/log"
 )
 

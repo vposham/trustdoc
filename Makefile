@@ -85,7 +85,7 @@ infra: dbInstanceUp \
 # Make sure to get the owl-quality project into your local and have it in the same parent folder of this project
 # install revive
 runRevive:
-	revive -config config.toml  -formatter friendly ./... ./... > lint-issues.txt
+	revive -config revive.toml  -formatter friendly ./... ./... > lint-issues.txt
 
 
  # Install goimports-reviser for formatting imports/code.
@@ -141,5 +141,8 @@ abigen:
 
 cln:
 	rm -r internal/bc/contracts/*.abi
+
+solccompile:
+	solc --base-path ./ --combined-json bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata  --optimize --evm-version berlin --allow-paths . --include-path ./node_modules ./internal/bc/contracts/DocumentToken.sol
 
 ##########################################  CONTAINERIZE  ####################################################

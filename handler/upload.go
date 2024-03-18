@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/vposham/trustdoc/internal/db/sqlc/dbtx"
 	"github.com/vposham/trustdoc/pkg/rest"
 )
@@ -26,7 +28,21 @@ func (d *DocH) Upload(c *gin.Context) {
 		return
 	}
 
-	// do something with blockchain here.
+	// generate md5 hash for the doc and owner email id
+	docMd5Hash, e1 := d.H.Hash(c, *req.File)
+	ownerEmailIdMd5Hash, e2 := d.H.Hash(c, strings.NewReader(req.OwnerEmail))
+	if e1 != nil || e2 != nil {
+		err = fmt.Errorf("unable to generate hash. docHashErr - %w. emailHashErr - %w", e1, e2)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to generate hash - " + err.Error()})
+		return
+	}
+
+	// mint a new tkn in blockchain
+	bcTknId, err := d.Bc.SignNBurn(c, docId, docMd5Hash, ownerEmailIdMd5Hash)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "unable to sign in blockchain - " + err.Error()})
+		return
+	}
 
 	// store the metadata in db
 	err = d.Db.SaveDocMeta(c, dbtx.DocMeta{
@@ -34,6 +50,8 @@ func (d *DocH) Upload(c *gin.Context) {
 		OwnerEmail:     req.OwnerEmail,
 		DocTitle:       req.DocTitle,
 		DocDesc:        req.DocDesc,
+		DocMd5Hash:     docMd5Hash,
+		BcTknId:        bcTknId,
 		DocName:        req.MpFileHeader.Filename,
 		OwnerFirstName: req.OwnerFirstName,
 		OwnerLastName:  req.OwnerLastName,

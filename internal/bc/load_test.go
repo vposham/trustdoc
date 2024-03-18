@@ -1,4 +1,4 @@
-package blob
+package bc
 
 import (
 	"context"
@@ -25,6 +25,6 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestGetBlobStore(t *testing.T) {
-	assert.NotNil(t, GetBlobStore())
+func TestGetBc(t *testing.T) {
+	assert.NotNil(t, GetBc())
 }

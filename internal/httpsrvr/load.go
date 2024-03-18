@@ -12,13 +12,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+
 	"github.com/vposham/trustdoc/config"
 	"github.com/vposham/trustdoc/handler"
 	"github.com/vposham/trustdoc/internal/httpsrvr/mwares/logio"
 	"github.com/vposham/trustdoc/internal/httpsrvr/mwares/reqlogger"
 	"github.com/vposham/trustdoc/internal/httpsrvr/mwares/svrtiming"
 	"github.com/vposham/trustdoc/log"
-	"go.uber.org/zap"
 )
 
 var (

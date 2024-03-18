@@ -3,9 +3,12 @@ package httpsrvr
 
 import (
 	"context"
+	"time"
 
 	"github.com/gin-contrib/pprof"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
+	"github.com/vposham/trustdoc/log"
 
 	"github.com/vposham/trustdoc/handler/base"
 )
@@ -15,9 +18,14 @@ import (
 func (s ServeConf) CreateServer(c context.Context) *gin.Engine {
 
 	router := gin.New()
+	gin.SetMode(gin.ReleaseMode)
 
 	// use this to limit file upload sizes
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB
+
+	// set gin to use zap logger
+	logger := log.GetLogger(c)
+	router.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 
 	router.Use(gin.Recovery())
 	s.addDefaultEndpoints(router)
