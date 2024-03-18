@@ -14,8 +14,8 @@ import (
 // Includes all routing config for app's endpoints.
 func (s ServeConf) CreateServer(c context.Context) *gin.Engine {
 
-	router := gin.New()
 	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 
 	// use this to limit file upload sizes
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB

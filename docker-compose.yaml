@@ -1,0 +1,69 @@
+version: "3.9"
+services:
+
+  postgres:
+    image: postgres:16.2-alpine3.19
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: root
+      POSTGRES_DB: doc_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./internal/db/migration/000001_init_schema.up.sql:/docker-entrypoint-initdb.d/ddl.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: none
+
+  minio:
+    image: minio/minio:latest
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: CHANGEME123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - ./minioData:/data
+    healthcheck:
+      test: [ "CMD", "mc", "ready", "local" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: none
+    command: server /data --console-address ":9001"
+
+  miniocreatebuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9000 minio CHANGEME123;
+      /usr/bin/mc rm -r --force myminio/docs-store;
+      /usr/bin/mc mb myminio/docs-store;
+      /usr/bin/mc anonymous set myminio/docs-store;
+      exit 0;
+      "
+    logging:
+      driver: none
+
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DOC_MINIO_ENDPOINT_URL: minio:9000
+      DOC_MINIO_ACCESS_KEY_ID: minio
+      DOC_MINIO_ACCESS_SECRET_KEY: CHANGEME123
+      KALEIDO_NODE_API_URL: ${KALEIDO_NODE_API_URL}
+      SIGN_PRIV_KEY: ${SIGN_PRIV_KEY}
+      DOC_DB_SOURCE_URL: postgresql://root:secret@postgres:5432/doc_db?sslmode=disable
+    depends_on:
+      - postgres
+      - minio

@@ -47,7 +47,7 @@ sqlc:
 ##########################################  BLOB STORE - MINIO  ####################################################
 minioUp:
 	mkdir -p ./minioData && \
-	${CRT} run -p 9000:9000 -p 9001:9001 --name minio -v ./minioData:/data -e "MINIO_ROOT_USER=minio" -e "MINIO_ROOT_PASSWORD=CHANGEME123" -e "MINIO_ACCESS_KEY=minio_access_key" -e "MINIO_SECRET_KEY=minio_secret_key" -d minio/minio server /data --console-address ":9001" && sleep 5
+	${CRT} run -p 9000:9000 -p 9001:9001 --name minio -v ./minioData:/data -e "MINIO_ROOT_USER=minio" -e "MINIO_ROOT_PASSWORD=CHANGEME123" -d minio/minio server /data --console-address ":9001" && sleep 5
 
 minioDown:
 	${CRT} rm -f minio
@@ -146,3 +146,6 @@ solccompile:
 	solc --base-path ./ --combined-json bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata  --optimize --evm-version berlin --allow-paths . --include-path ./node_modules ./internal/bc/contracts/DocumentToken.sol
 
 ##########################################  CONTAINERIZE  ####################################################
+
+cont:
+	${CRT} build -t trustdoc .

@@ -1,0 +1,153 @@
+{
+	"info": {
+		"_postman_id": "38c74377-52e2-4d6b-8a48-fdd4ae31e0d1",
+		"name": "trustdoc",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2782352"
+	},
+	"item": [
+		{
+			"name": "upload",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();",
+							"pm.test(\"upload status 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    pm.environment.set(\"docId\", jsonData.doc.docId)",
+							"    pm.environment.set(\"docBcTkn\", jsonData.doc.bcTknId)",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "doc",
+							"type": "file",
+							"src": "/Users/u911444/Downloads/WhatsApp Image 2023-07-31 at 12.35.36 AM.jpeg"
+						},
+						{
+							"key": "ownerEmail",
+							"value": "abcd@test.com",
+							"type": "text"
+						},
+						{
+							"key": "docTitle",
+							"value": "kaleido challange doc",
+							"type": "text"
+						},
+						{
+							"key": "docDesc",
+							"value": "kaleido challange doc",
+							"type": "text"
+						},
+						{
+							"key": "ownerFirstName",
+							"value": "vignan",
+							"type": "text"
+						},
+						{
+							"key": "ownerLastName",
+							"value": "posham",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/svc/v1/doc/upload",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"svc",
+						"v1",
+						"doc",
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "verify",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "doc",
+							"type": "file",
+							"src": "dummy.pdf"
+						},
+						{
+							"key": "ownerEmail",
+							"value": "abcd@test.com",
+							"type": "text"
+						},
+						{
+							"key": "docBcTkn",
+							"value": "{{docBcTkn}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "localhost:8080/svc/v1/doc/verify",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"svc",
+						"v1",
+						"doc",
+						"verify"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "download",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "localhost:8080/svc/v1/doc/download/{{docId}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"svc",
+						"v1",
+						"doc",
+						"download",
+						"{{docId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
