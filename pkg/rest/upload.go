@@ -1,6 +1,8 @@
 package rest
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+)
 
 type UploadReq struct {
 	OwnerEmail     string `form:"ownerEmail" json:"ownerEmail" binding:"required,email"`
@@ -9,6 +11,10 @@ type UploadReq struct {
 	OwnerFirstName string `form:"ownerFirstName" json:"ownerFirstName" binding:"required,alpha,min=3"`
 	OwnerLastName  string `form:"ownerLastName" json:"ownerLastName" binding:"required,alpha,min=3"`
 
-	MpFileHeader *multipart.FileHeader
-	File         *multipart.File
+	MpFileHeader      *multipart.FileHeader
+	OwnerEmailMd5Hash string
+	DocMd5Hash        string
+}
+
+type UploadResp struct {
 }

@@ -3,38 +3,59 @@ package bc
 import (
 	"context"
 	"crypto/ecdsa"
-	"time"
+	"fmt"
+	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	ethrpc "github.com/ethereum/go-ethereum/rpc"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/vposham/trustdoc/internal/bc/contracts"
+	"github.com/vposham/trustdoc/log"
+	"go.uber.org/zap"
 )
 
-var _ OpsIf = (*KaleidoEth)(nil)
+var _ OpsIf = (*Kaleido)(nil)
 
-type KaleidoEth struct {
-	CompiledContract       *CompiledSolidity
-	RPC                    *ethrpc.Client
-	Account                common.Address
-	PrivateKey             *ecdsa.PrivateKey
-	Signer                 types.EIP155Signer
-	Nonce                  uint64
-	Amount                 int64
-	ChainId                int64
-	To                     *common.Address
-	RpcTimeout             time.Duration
-	ReceiptWaitMinDuration time.Duration
-	ReceiptWaitMaxDuration time.Duration
-
-	GasLimitOnTx int64
-	GasPrice     int64
+type Kaleido struct {
+	account      common.Address
+	privateKey   *ecdsa.PrivateKey
+	signer       types.EIP155Signer
+	nonce        uint64
+	amount       int64
+	to           *common.Address
+	gasLimitOnTx int64
+	gasPrice     *big.Int
+	ethCl        *ethclient.Client
+	docTkn       *contracts.DocumentToken
 }
 
-func (k KaleidoEth) SignNBurn(ctx context.Context, docId, docHash, ownerEmailHash string) (string, error) {
-	tx := k.generateTransaction()
-	txHash, err := k.sendTransaction(tx)
+func (k *Kaleido) MintDocTkn(ctx context.Context, docId, docHash, ownerEmailHash string) (string, error) {
+	logger := log.GetLogger(ctx)
+	nonce, err := k.ethCl.PendingNonceAt(ctx, k.account)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get nonce: %w", err)
 	}
-	return txHash, nil
+	tx, err := k.docTkn.MintDocument(&bind.TransactOpts{
+		From:      common.Address{},
+		Nonce:     big.NewInt(int64(nonce)),
+		Signer:    k.sign,
+		Value:     nil,
+		GasPrice:  k.gasPrice,
+		GasFeeCap: nil,
+		GasTipCap: nil,
+		GasLimit:  uint64(k.gasLimitOnTx),
+		Context:   ctx,
+		NoSend:    false,
+	}, docId, docHash, ownerEmailHash)
+	if err != nil {
+		return "", fmt.Errorf("failed to mint new docTkn: %w", err)
+	}
+	bcTxHash := tx.Hash().Hex()
+	logger.Info("externally signed and sent docTkn for mining", zap.Any("bcTxHash", bcTxHash))
+	return bcTxHash, nil
+}
+
+func (k *Kaleido) sign(a common.Address, t *types.Transaction) (*types.Transaction, error) {
+	return types.SignTx(t, k.signer, k.privateKey)
 }

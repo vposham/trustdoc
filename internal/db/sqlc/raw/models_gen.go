@@ -62,6 +62,7 @@ type Document struct {
 	FileName      string         `json:"fileName"`
 	DocHash       string         `json:"docHash"`
 	DocMintedID   string         `json:"docMintedId"`
+	DocTknMined   bool           `json:"docTknMined"`
 	UserID        int64          `json:"userId"`
 	UploadedAt    time.Time      `json:"uploadedAt"`
 	LastUpdatedAt time.Time      `json:"lastUpdatedAt"`

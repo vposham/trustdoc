@@ -10,9 +10,12 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	ethrpc "github.com/ethereum/go-ethereum/rpc"
+	"github.com/vposham/trustdoc/internal/bc/contracts"
 	"go.uber.org/zap"
 
 	"github.com/vposham/trustdoc/config"
@@ -55,44 +58,47 @@ func loadImpls(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("connection to kaliedo blockchain failed: %w", err)
 		}
+
+		// get node chainId. This is needed for EIP155 signing
 		chainId, err := getNetworkID(ctx, url)
 		if err != nil {
 			return err
 		}
 
-		// compile solc smart contract
-		mintDocContract, err := compile(ctx)
+		fromAdd := ethcrypto.PubkeyToAddress(signKey.PublicKey)
+
+		ethCl := ethclient.NewClient(rpcClient)
+		nonce, err := ethCl.PendingNonceAt(ctx, fromAdd)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get nonce: %w", err)
 		}
 
-		k := KaleidoEth{
-			CompiledContract:       mintDocContract,
-			RPC:                    rpcClient,
-			Account:                ethcrypto.PubkeyToAddress(signKey.PublicKey),
-			PrivateKey:             signKey,
-			Signer:                 types.NewEIP155Signer(big.NewInt(chainId)),
-			Nonce:                  0, // we pull the latest nonce
-			Amount:                 0,
-			ChainId:                chainId,
-			RpcTimeout:             props.MustGetParsedDuration("rpc.max.timout.duration"),
-			ReceiptWaitMinDuration: props.MustGetParsedDuration("mine.receipt.min.wait.duration"),
-			ReceiptWaitMaxDuration: props.MustGetParsedDuration("mine.receipt.max.wait.duration"),
-			GasLimitOnTx:           props.MustGetInt64("max.gas.per.tx"),
-			GasPrice:               props.MustGetInt64("gas.price"),
+		gasPrice, err := ethCl.SuggestGasPrice(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get nonce: %w", err)
 		}
 
-		err = k.initializeNonce(k.Account)
-		if err != nil {
-			return fmt.Errorf("failed to initialize nonce: %w", err)
+		k := Kaleido{
+			account:      fromAdd,
+			privateKey:   signKey,
+			signer:       types.NewEIP155Signer(big.NewInt(chainId)),
+			nonce:        nonce,
+			amount:       0,
+			gasLimitOnTx: props.MustGetInt64("max.gas.per.tx"),
+			gasPrice:     gasPrice,
+			ethCl:        ethclient.NewClient(rpcClient),
 		}
 
-		// install contract on node.
-		// todo - find if there is a way to not install contract on every node on every startup of app
-		k.To, err = k.InstallContract()
+		toKey := props.MustGetString("kaleido.account.key")
+		address := common.HexToAddress(toKey)
+		k.to = &address
+
+		instance, err := contracts.NewDocumentToken(*k.to, ethCl)
 		if err != nil {
-			return fmt.Errorf("failed to install contract: %w", err)
+			return fmt.Errorf("failed to instantiate a smart contract: %w", err)
 		}
+
+		k.docTkn = instance
 
 		var kOps OpsIf = &k
 		concreteImpls[bcExecKey] = kOps
@@ -147,20 +153,4 @@ func getNetworkID(ctx context.Context, url string) (int64, error) {
 	}
 	log.GetLogger(ctx).Info("get network id", zap.Int64("networkId", networkID))
 	return networkID, nil
-}
-
-func compile(ctx context.Context) (*CompiledSolidity, error) {
-	props := config.GetAll()
-	method := props.MustGetString("smartcontract.method.name")
-	solFilePath := props.MustGetString("smartcontract.solidity.file.path")
-	contractName := props.MustGetString("smartcontract.name")
-	scErc721NodeModsPath := props.MustGetString("smartcontract.node.modules.path")
-	mintDocContract, err := CompileContract(ctx,
-		solFilePath, props.MustGetString("smartcontract.evm.version"),
-		fmt.Sprintf("%s:%s", solFilePath, contractName), method,
-		scErc721NodeModsPath, []string{"string", "string", "string"})
-	if err != nil {
-		return nil, fmt.Errorf("failed to compile contract: %w", err)
-	}
-	return mintDocContract, nil
 }

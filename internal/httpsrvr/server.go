@@ -3,13 +3,9 @@ package httpsrvr
 
 import (
 	"context"
-	"time"
 
 	"github.com/gin-contrib/pprof"
-	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
-	"github.com/vposham/trustdoc/log"
-
 	"github.com/vposham/trustdoc/handler/base"
 )
 
@@ -22,10 +18,6 @@ func (s ServeConf) CreateServer(c context.Context) *gin.Engine {
 
 	// use this to limit file upload sizes
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB
-
-	// set gin to use zap logger
-	logger := log.GetLogger(c)
-	router.Use(ginzap.Ginzap(logger, time.RFC3339, true))
 
 	router.Use(gin.Recovery())
 	s.addDefaultEndpoints(router)
@@ -43,8 +35,8 @@ func (s ServeConf) addProfiling(router *gin.Engine) {
 
 func (s ServeConf) addSwagger(router *gin.Engine) {
 	if s.SwaggerEndpointsEnabled {
-		router.Static("/swaggerui", "doc/swagger-ui-dist")
-		router.StaticFile("swagger.json", "doc/swagger.json")
+		router.Static("/swaggerui", "docs/swagger-ui-dist")
+		router.StaticFile("swagger.json", "docs/swagger.json")
 	}
 }
 

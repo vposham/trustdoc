@@ -22,14 +22,14 @@ type Minio struct {
 func (m *Minio) Put(ctx context.Context, doc io.Reader, size int64) (docId string, err error) {
 	logger := log.GetLogger(ctx)
 	docId = uuid.New().String()
-	logger.Info("started uploading document", zap.String("docId", docId))
-	up, err := m.client.PutObject(ctx, m.bucketName, docId, doc, size, minio.PutObjectOptions{SendContentMd5: true})
+	logger.Info("started uploading document to minio", zap.String("docId", docId))
+	_, err = m.client.PutObject(ctx, m.bucketName, docId, doc, size, minio.PutObjectOptions{SendContentMd5: true})
 	if err != nil {
 		err = fmt.Errorf("failed to upload - %w", err)
 		logger.Error("failed to upload document", zap.String("docId", docId), zap.Error(err))
 		return
 	}
-	logger.Info("completed uploading document", zap.String("docId", docId), zap.Any("uploadInfo", up))
+	logger.Info("completed uploading document to minio", zap.String("docId", docId))
 	return
 }
 

@@ -42,6 +42,40 @@ func (store *Store) SaveDocMeta(ctx context.Context, in DocMeta) error {
 	})
 }
 
+func (store *Store) GetDocMetaByHash(ctx context.Context, docMd5Hash string) (DocMeta, error) {
+	logger := log.GetLogger(ctx)
+	logger.Info("started db tx for get document meta by hash", zap.Any("docMd5Hash", docMd5Hash))
+	var m DocMeta
+	err := store.execTxWithRetry(ctx, func(queries Queries) error {
+		doc, err := queries.GetDocByHash(ctx, docMd5Hash)
+		if err != nil {
+			return err
+		}
+		u, err := queries.GetUserById(ctx, doc.UserID)
+		if err != nil {
+			return err
+		}
+		m = DocMeta{
+			DocId:          doc.DocID,
+			OwnerEmail:     u.EmailID,
+			DocTitle:       doc.Title,
+			DocDesc:        doc.Description.String,
+			DocName:        doc.FileName,
+			DocMd5Hash:     doc.DocHash,
+			BcTknId:        doc.DocMintedID,
+			OwnerFirstName: u.FirstName,
+			OwnerLastName:  u.LastName,
+		}
+		return nil
+	})
+	return m, err
+}
+
+func (store *Store) GetDocMeta(ctx context.Context, docId string) (DocMeta, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
 func chkUsrExists(ctx context.Context, queries Queries, email string) (u *raw.User, exists bool, err error) {
 	logger := log.GetLogger(ctx)
 	logger.Info("checking if user exists", zap.String("email", email))
@@ -101,9 +135,4 @@ func saveDocMeta(ctx context.Context, queries Queries, in DocMeta, u *raw.User) 
 		return err
 	}
 	return nil
-}
-
-func (store *Store) GetDocMeta(ctx context.Context, docId string) (DocMeta, error) {
-	// TODO implement me
-	panic("implement me")
 }

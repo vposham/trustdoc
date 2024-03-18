@@ -36,7 +36,7 @@ func TestNewReqId(t *testing.T) {
 }
 
 func TestGetRequestIdNoCtx(t *testing.T) {
-	got := GetRequestId(context.TODO())
+	got := GetRequestId(context.Background())
 	expected := "X-Request-Service-ID req/resp correlation id not set."
 	if got != expected {
 		t.Errorf("GetRequestId() without context should return %s, but recieved %s", expected, got)

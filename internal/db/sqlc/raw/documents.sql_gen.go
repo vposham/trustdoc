@@ -13,7 +13,7 @@ import (
 const addDoc = `-- name: AddDoc :one
 INSERT INTO documents (doc_id, title, description, file_name, doc_hash, doc_minted_id, user_id)
 VALUES ($1, $2, $3, $4, $5, $6, $7)
-RETURNING id, doc_id, title, description, file_name, doc_hash, doc_minted_id, user_id, uploaded_at, last_updated_at
+RETURNING id, doc_id, title, description, file_name, doc_hash, doc_minted_id, doc_tkn_mined, user_id, uploaded_at, last_updated_at
 `
 
 type AddDocParams struct {
@@ -45,6 +45,7 @@ func (q *Queries) AddDoc(ctx context.Context, arg AddDocParams) (Document, error
 		&i.FileName,
 		&i.DocHash,
 		&i.DocMintedID,
+		&i.DocTknMined,
 		&i.UserID,
 		&i.UploadedAt,
 		&i.LastUpdatedAt,
@@ -53,7 +54,7 @@ func (q *Queries) AddDoc(ctx context.Context, arg AddDocParams) (Document, error
 }
 
 const getDoc = `-- name: GetDoc :one
-SELECT id, doc_id, title, description, file_name, doc_hash, doc_minted_id, user_id, uploaded_at, last_updated_at
+SELECT id, doc_id, title, description, file_name, doc_hash, doc_minted_id, doc_tkn_mined, user_id, uploaded_at, last_updated_at
 FROM documents
 WHERE doc_id = $1
 LIMIT 1
@@ -70,6 +71,33 @@ func (q *Queries) GetDoc(ctx context.Context, docID string) (Document, error) {
 		&i.FileName,
 		&i.DocHash,
 		&i.DocMintedID,
+		&i.DocTknMined,
+		&i.UserID,
+		&i.UploadedAt,
+		&i.LastUpdatedAt,
+	)
+	return i, err
+}
+
+const getDocByHash = `-- name: GetDocByHash :one
+SELECT id, doc_id, title, description, file_name, doc_hash, doc_minted_id, doc_tkn_mined, user_id, uploaded_at, last_updated_at
+FROM documents
+WHERE doc_hash = $1
+LIMIT 1
+`
+
+func (q *Queries) GetDocByHash(ctx context.Context, docHash string) (Document, error) {
+	row := q.queryRow(ctx, q.getDocByHashStmt, getDocByHash, docHash)
+	var i Document
+	err := row.Scan(
+		&i.ID,
+		&i.DocID,
+		&i.Title,
+		&i.Description,
+		&i.FileName,
+		&i.DocHash,
+		&i.DocMintedID,
+		&i.DocTknMined,
 		&i.UserID,
 		&i.UploadedAt,
 		&i.LastUpdatedAt,

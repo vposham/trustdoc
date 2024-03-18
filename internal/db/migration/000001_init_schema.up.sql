@@ -4,20 +4,17 @@
 CREATE TABLE documents
 (
     id              BIGSERIAL PRIMARY KEY,
-    doc_id          VARCHAR(50)  NOT NULL,
+    doc_id          VARCHAR(50)  NOT NULL UNIQUE,
     title           VARCHAR(255) NOT NULL,
     description     TEXT,
     file_name       VARCHAR(255) NOT NULL,
-    doc_hash        VARCHAR(255) NOT NULL,
+    doc_hash        VARCHAR(255) NOT NULL UNIQUE,
     doc_minted_id   VARCHAR(255) NOT NULL,
+    doc_tkn_mined   BOOLEAN      NOT NULL DEFAULT FALSE,
     user_id         BIGINT       NOT NULL,
     uploaded_at     timestamptz  NOT NULL DEFAULT NOW(),
     last_updated_at timestamptz  NOT NULL DEFAULT NOW()
 );
-
--- doc_id is unique
-ALTER TABLE documents
-    ADD CONSTRAINT doc_id_un_key UNIQUE (doc_id);
 
 -- specifies the type of user
 CREATE TYPE user_type AS ENUM (
@@ -26,22 +23,17 @@ CREATE TYPE user_type AS ENUM (
     'SOFT_DELETED'
     );
 
-
 -- users table maintains the user who uploaded the document.
 CREATE TABLE users
 (
     id              BIGSERIAL PRIMARY KEY,
-    email_id        VARCHAR(100) NOT NULL,
+    email_id        VARCHAR(100) NOT NULL UNIQUE,
     first_name      VARCHAR(100) NOT NULL,
     last_name       VARCHAR(100) NOT NULL,
     status          user_type    NOT NULL,
     created_at      timestamptz  NOT NULL DEFAULT NOW(),
     last_updated_at timestamptz  NOT NULL DEFAULT NOW()
 );
-
--- email_id is unique
-ALTER TABLE users
-    ADD CONSTRAINT email_id_un_key UNIQUE (email_id);
 
 -- foreign key constraint between documents and users table to know the document ownership
 ALTER TABLE documents

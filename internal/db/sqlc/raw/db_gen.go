@@ -33,8 +33,14 @@ func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	if q.getDocStmt, err = db.PrepareContext(ctx, getDoc); err != nil {
 		return nil, fmt.Errorf("error preparing query GetDoc: %w", err)
 	}
+	if q.getDocByHashStmt, err = db.PrepareContext(ctx, getDocByHash); err != nil {
+		return nil, fmt.Errorf("error preparing query GetDocByHash: %w", err)
+	}
 	if q.getUserStmt, err = db.PrepareContext(ctx, getUser); err != nil {
 		return nil, fmt.Errorf("error preparing query GetUser: %w", err)
+	}
+	if q.getUserByIdStmt, err = db.PrepareContext(ctx, getUserById); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserById: %w", err)
 	}
 	return &q, nil
 }
@@ -56,9 +62,19 @@ func (q *Queries) Close() error {
 			err = fmt.Errorf("error closing getDocStmt: %w", cerr)
 		}
 	}
+	if q.getDocByHashStmt != nil {
+		if cerr := q.getDocByHashStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getDocByHashStmt: %w", cerr)
+		}
+	}
 	if q.getUserStmt != nil {
 		if cerr := q.getUserStmt.Close(); cerr != nil {
 			err = fmt.Errorf("error closing getUserStmt: %w", cerr)
+		}
+	}
+	if q.getUserByIdStmt != nil {
+		if cerr := q.getUserByIdStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByIdStmt: %w", cerr)
 		}
 	}
 	return err
@@ -98,21 +114,25 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db          DBTX
-	tx          *sql.Tx
-	addDocStmt  *sql.Stmt
-	addUserStmt *sql.Stmt
-	getDocStmt  *sql.Stmt
-	getUserStmt *sql.Stmt
+	db               DBTX
+	tx               *sql.Tx
+	addDocStmt       *sql.Stmt
+	addUserStmt      *sql.Stmt
+	getDocStmt       *sql.Stmt
+	getDocByHashStmt *sql.Stmt
+	getUserStmt      *sql.Stmt
+	getUserByIdStmt  *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:          tx,
-		tx:          tx,
-		addDocStmt:  q.addDocStmt,
-		addUserStmt: q.addUserStmt,
-		getDocStmt:  q.getDocStmt,
-		getUserStmt: q.getUserStmt,
+		db:               tx,
+		tx:               tx,
+		addDocStmt:       q.addDocStmt,
+		addUserStmt:      q.addUserStmt,
+		getDocStmt:       q.getDocStmt,
+		getDocByHashStmt: q.getDocByHashStmt,
+		getUserStmt:      q.getUserStmt,
+		getUserByIdStmt:  q.getUserByIdStmt,
 	}
 }
