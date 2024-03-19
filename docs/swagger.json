@@ -1,0 +1,335 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "trustdoc",
+    "description": "trustdoc is microservice which provides APIs for its clients to upload and verify the authenticity of those files.\n\nSome useful links:\n- [trustdoc repository](https://github.com/vposham/i/trustdoc)\n- [The source API definition for the trustdoc](https://github.com/vposham/trustdoc/blob/main/docs/swagger.json)",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "tags": [
+    {
+      "name": "doc",
+      "description": "Document operations"
+    },
+    {
+      "name": "kube",
+      "description": "Endpoints needed for running in kube"
+    }
+  ],
+  "paths": {
+    "/svc/v1/doc/upload": {
+      "post": {
+        "tags": [
+          "doc"
+        ],
+        "summary": "Upload a new document with an owner email",
+        "description": "Uploads a new document by storing it contents in blob store, ownership along and its meta data  in centralized store (sql db) and also stores the document's and owner's hash in blockchain. Issues a new blockchain transaction token and centralized docId upon success.",
+        "operationId": "uploadDocument",
+        "requestBody": {
+          "description": "Upload a new document",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadDocReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadDocResp"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadDocResp"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadDocResp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/svc/v1/doc/verify": {
+      "post": {
+        "tags": [
+          "doc"
+        ],
+        "summary": "Verify a document and its ownership",
+        "description": "Verify if the contents of the document or the ownership of the document have been altered.",
+        "operationId": "verifyDocument",
+        "requestBody": {
+          "description": "Upload a new document",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyDocReq"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyDocResp"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyDocResp"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifyDocResp"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/svc/v1/doc/download/{docId}": {
+      "get": {
+        "tags": [
+          "doc"
+        ],
+        "summary": "Downloads the document",
+        "description": "Downloads the document for a given docId",
+        "operationId": "downloadDocument",
+        "parameters": [
+          {
+            "name": "docId",
+            "in": "path",
+            "description": "ID of document to download",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid status value"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "kube"
+        ],
+        "summary": "Health endpoint",
+        "description": "Health endpoint, needed for kube to check health.",
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/info": {
+      "get": {
+        "tags": [
+          "kube"
+        ],
+        "summary": "Info endpoint",
+        "description": "Info endpoint, expose basic app info.",
+        "operationId": "info",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Info"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UploadDocReq": {
+        "type": "object",
+        "required": [
+          "doc",
+          "docTitle",
+          "ownerEmail",
+          "ownerFirstName",
+          "ownerLastName"
+        ],
+        "properties": {
+          "doc": {
+            "type": "string",
+            "format": "binary"
+          },
+          "docTitle": {
+            "type": "string",
+            "example": "my test doc"
+          },
+          "ownerEmail": {
+            "type": "string",
+            "example": "test@abcd.com"
+          },
+          "ownerFirstName": {
+            "type": "string",
+            "example": "sai"
+          },
+          "ownerLastName": {
+            "type": "string",
+            "example": "ram"
+          },
+          "docDesc": {
+            "type": "string",
+            "example": "my test doc description"
+          }
+        }
+      },
+      "UploadDocResp": {
+        "type": "object",
+        "properties": {
+          "doc": {
+            "type": "object",
+            "properties": {
+              "bcTknId": {
+                "type": "string"
+              },
+              "docDesc": {
+                "type": "string"
+              }
+            }
+          },
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "VerifyDocReq": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "example": "437 Lytton"
+          },
+          "city": {
+            "type": "string",
+            "example": "Palo Alto"
+          },
+          "state": {
+            "type": "string",
+            "example": "CA"
+          },
+          "zip": {
+            "type": "string",
+            "example": "94301"
+          }
+        },
+        "xml": {
+          "name": "address"
+        }
+      },
+      "VerifyDocResp": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Dogs"
+          }
+        },
+        "xml": {
+          "name": "category"
+        }
+      },
+      "Info": {
+        "type": "object",
+        "properties": {
+          "kubePodId": {
+            "type": "string"
+          },
+          "lastCommitId": {
+            "type": "string"
+          },
+          "upSince": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

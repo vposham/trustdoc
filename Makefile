@@ -147,5 +147,8 @@ solccompile:
 
 ##########################################  CONTAINERIZE  ####################################################
 
-cont:
+build:
 	${CRT} build -t trustdoc .
+
+dup:
+	docker-compose --env-file .env up --build

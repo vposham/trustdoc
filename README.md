@@ -1,6 +1,6 @@
 # trustdoc
 
-Trustdoc is microservice which provides APIs for its clients to upload, verify and download files.
+trustdoc is microservice which provides APIs for its clients to upload and verify the authenticity of those files.
 
 ### Purpose:
 
@@ -52,16 +52,31 @@ It uses following infrastructure:
 
 Following 2 environment variables are required to run the application as it connects to Kaleido SaaS platform.
 
+tldr - single run command - `docker-compose --env-file .env up --build` if your .env file has above 2 environment
+variables.
+
 1. `KALEIDO_NODE_API_URL` - used to authenticate and talk to a node running on Kaleido which provides us the blockchain
    service.
 2. `SIGN_PRIV_KEY` - used to sign the content before sending it to the blockchain.
- 
+
 ## API Documentation:
 
+Please find swagger documentation at `http://localhost:8080/swaggerui/` after running the application.
+
+`swagger.json` is present in the `docs` directory.
+
+Import the postman collection from the `docs` directory to interact with all APIs.
+
+## Unit test:
+
+Run `make test` to run the unit tests.
+
 ## Integration test:
-   Use newman to run the integration tests, the collection is present in the `docs` directory.
+
+Use newman to run the integration tests, the collection is present in the `docs` directory.
 
 ## TODO
 
-    `make docker`
-    to create a docker image for this project and then can be run through docker as well!
+1. Fix the verifyAuthenticity API.
+2. Add a RPC lister or NATS Jetstream event listener to check if transactions are mined after x duration.
+3. Add more unit tests.

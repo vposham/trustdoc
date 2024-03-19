@@ -34,6 +34,7 @@ func (s ServeConf) addProfiling(router *gin.Engine) {
 	}
 }
 
+// Dockerfile downloads and places the swagger-ui-dist in the docs folder durinf runtime.
 func (s ServeConf) addSwagger(router *gin.Engine) {
 	if s.SwaggerEndpointsEnabled {
 		router.Static("/swaggerui", "docs/swagger-ui-dist")

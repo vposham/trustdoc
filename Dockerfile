@@ -13,6 +13,9 @@ RUN wget -O /tmp/swagger-resources.tgz \
   && cd /tmp && tar -xf swagger-resources.tgz && rm -rf swagger-resources.tgz \
   && mv package swagger-ui-resources
 
+# Replace default swagger json with our api json file
+RUN sed -i 's#https:\/\/petstore.swagger.io\/v2\/swagger.json#..\/swagger.json#g'  /tmp/swagger-ui-resources/swagger-initializer.js
+
 WORKDIR /go/src/trustdoc
 
 # Caching all external dependencies in docker context
