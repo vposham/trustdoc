@@ -253,10 +253,31 @@
           "doc": {
             "type": "object",
             "properties": {
-              "bcTknId": {
+              "docId": {
+                "type": "string"
+              },
+              "ownerEmail": {
+                "type": "string"
+              },
+              "docTitle": {
                 "type": "string"
               },
               "docDesc": {
+                "type": "string"
+              },
+              "docName": {
+                "type": "string"
+              },
+              "docMd5Hash": {
+                "type": "string"
+              },
+              "bcTknId": {
+                "type": "string"
+              },
+              "ownerFirstName": {
+                "type": "string"
+              },
+              "ownerLastName": {
                 "type": "string"
               }
             }
@@ -268,43 +289,33 @@
       },
       "VerifyDocReq": {
         "type": "object",
+        "required": [
+          "doc",
+          "ownerEmail",
+          "docBcTkn"
+        ],
         "properties": {
-          "street": {
+          "doc": {
             "type": "string",
-            "example": "437 Lytton"
+            "format": "binary"
           },
-          "city": {
-            "type": "string",
-            "example": "Palo Alto"
+          "ownerEmail": {
+            "type": "string"
           },
-          "state": {
-            "type": "string",
-            "example": "CA"
-          },
-          "zip": {
-            "type": "string",
-            "example": "94301"
+          "docBcTkn": {
+            "type": "string"
           }
-        },
-        "xml": {
-          "name": "address"
         }
       },
       "VerifyDocResp": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64",
-            "example": 1
+          "verified": {
+            "type": "boolean"
           },
-          "name": {
-            "type": "string",
-            "example": "Dogs"
+          "error": {
+            "type": "string"
           }
-        },
-        "xml": {
-          "name": "category"
         }
       },
       "Info": {

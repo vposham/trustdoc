@@ -148,6 +148,42 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "swagger",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/swagger.json",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"swagger.json"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "swagger-ui",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/swaggerui",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"swaggerui"
+					]
+				}
+			},
+			"response": []
 		}
 	]
 }
