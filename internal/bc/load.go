@@ -3,6 +3,7 @@ package bc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 	"net"
@@ -11,6 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	ethcrypto "github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -18,7 +21,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/vposham/trustdoc/config"
-	"github.com/vposham/trustdoc/internal/bc/contracts"
 	"github.com/vposham/trustdoc/log"
 )
 
@@ -44,7 +46,8 @@ func Load(ctx context.Context) error {
 func loadImpls(ctx context.Context) error {
 	props := config.GetAll()
 	if concreteImpls[bcExecKey] == nil {
-		url := props.MustGetString("kaleido.node.api.url")
+		httpUrl := props.MustGetString("kaleido.node.https.api.url")
+		wsUrl := fmt.Sprintf("kaleido.node.wss.api.url")
 		logger := log.GetLogger(ctx)
 
 		// load private signing keys
@@ -55,13 +58,13 @@ func loadImpls(ctx context.Context) error {
 		}
 
 		// load blockchain transport layer
-		rpcClient, err := ethrpc.DialOptions(ctx, url, ethrpc.WithHTTPClient(loadBcHttpClient(ctx)))
+		rpcClient, err := ethrpc.DialOptions(ctx, httpUrl, ethrpc.WithHTTPClient(loadBcHttpClient(ctx)))
 		if err != nil {
 			return fmt.Errorf("connection to kaliedo blockchain failed: %w", err)
 		}
 
 		// get node chainId. This is needed for EIP155 signing
-		chainId, err := getNetworkID(ctx, url)
+		chainId, err := getNetworkID(ctx, httpUrl)
 		if err != nil {
 			return err
 		}
@@ -73,7 +76,7 @@ func loadImpls(ctx context.Context) error {
 
 		gasPrice, err := ethCl.SuggestGasPrice(ctx)
 		if err != nil {
-			return fmt.Errorf("failed to get nonce: %w", err)
+			return fmt.Errorf("failed to get gas price: %w", err)
 		}
 
 		k := Kaleido{
@@ -85,11 +88,12 @@ func loadImpls(ctx context.Context) error {
 			contractAddress:        nil, // updated below after contract creation
 			gasLimitOnTx:           props.MustGetInt64("max.gas.per.tx"),
 			gasPrice:               gasPrice,
-			ethCl:                  ethclient.NewClient(rpcClient),
+			ethCl:                  ethCl,
 			docTkn:                 nil,
 			rpcTimeout:             45 * time.Second,
 			receiptWaitMinDuration: 10 * time.Second,
 			receiptWaitMaxDuration: 30 * time.Second,
+			wsUrl:                  wsUrl,
 		}
 
 		if props.MustGetBool("skip.blockchain.contract.install") {
@@ -98,14 +102,40 @@ func loadImpls(ctx context.Context) error {
 			return nil
 		}
 
+		// auth, err := bind.NewKeyedTransactorWithChainID(signKey, big.NewInt(chainId))
+		// if err != nil {
+		// 	return err
+		// }
+		//
+		// contractAdd, tx, instance, err := DeployDocTknAbi(auth, ethCl)
+		// if err != nil {
+		// 	return fmt.Errorf("failed to deploy new contract: %w", err)
+		// }
+		//
+		// // Wait for the transaction to be mined
+		// ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		// defer cancel()
+		// conAdd, err := bind.WaitDeployed(ctx, k.ethCl, tx)
+		// if err != nil {
+		// 	return fmt.Errorf("failed contractAddress wait for mining: %w", err)
+		// }
+		// logger.Info("contract deployed waited", zap.String("contractAddress", conAdd.String()))
+		//
+		// k.authTxnOpts = auth
+		// k.contractAddress = &contractAdd
+		// k.docTkn = instance
+
+		// logger.Info("contractAdd",
+		// 	zap.String("contractAdd", contractAdd.String())) // 0x411265504c2267d5fCA3049CB7edB8BE4F377306
+
 		cAdd, err := k.InstallContract(ctx)
 		if err != nil {
 			return fmt.Errorf("failed contractAddress install contract: %w", err)
 		}
 		k.contractAddress = cAdd
-		logger.Info("contract installed", zap.String("contractAddress", cAdd.Hex()))
+		logger.Info("contract installed", zap.String("contractAddress", cAdd.String()))
 
-		instance, err := contracts.NewDocumentToken(*k.contractAddress, ethCl)
+		instance, err := NewDocumentToken(*k.contractAddress, ethCl)
 		if err != nil {
 			return fmt.Errorf("failed to instantiate a smart contract: %w", err)
 		}
@@ -114,6 +144,8 @@ func loadImpls(ctx context.Context) error {
 
 		var kOps OpsIf = &k
 		concreteImpls[bcExecKey] = kOps
+
+		go k.ListenForEvents(ctx)
 	}
 	return nil
 }
@@ -165,4 +197,26 @@ func getNetworkID(ctx context.Context, url string) (int64, error) {
 	}
 	log.GetLogger(ctx).Info("get network id", zap.Int64("networkId", networkID))
 	return networkID, nil
+}
+
+// DeployDocTknAbi deploys a new Ethereum contract, binding an instance of Storage to it.
+func DeployDocTknAbi(auth *bind.TransactOpts, backend bind.ContractBackend) (common.Address, *types.Transaction,
+	*DocumentToken,
+	error) {
+	parsed, err := DocumentTokenMetaData.GetAbi()
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+	if parsed == nil {
+		return common.Address{}, nil, nil, errors.New("GetABI returned nil")
+	}
+
+	address, tx, contract, err := bind.DeployContract(auth, *parsed, common.FromHex(DocumentTokenMetaData.Bin), backend)
+	if err != nil {
+		return common.Address{}, nil, nil, err
+	}
+
+	return address, tx, &DocumentToken{DocumentTokenCaller: DocumentTokenCaller{contract: contract},
+		DocumentTokenTransactor: DocumentTokenTransactor{contract: contract},
+		DocumentTokenFilterer:   DocumentTokenFilterer{contract: contract}}, nil
 }

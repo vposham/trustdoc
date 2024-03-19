@@ -18,6 +18,15 @@ contract DocumentToken is ERC721 {
 
     mapping(uint256 => Document) private _documents;
 
+    // Event to emit when a document is minted
+    event DocumentMinted(
+        uint256 indexed tokenId,
+        string docId,
+        string docMd5Hash,
+        string ownerEmailIdMd5Hash,
+        uint256 uploadedAt
+    );
+
     constructor() ERC721("DocumentToken", "DOCTKN") {}
 
     function mintDocument(
@@ -36,6 +45,15 @@ contract DocumentToken is ERC721 {
         });
 
         _mint(msg.sender, newItemId);
+
+        // Emit the DocumentMinted event
+        emit DocumentMinted(
+            newItemId,
+            _docId,
+            _docMd5Hash,
+            _ownerEmailIdMd5Hash,
+            block.timestamp
+        );
 
         return newItemId;
     }

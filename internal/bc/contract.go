@@ -18,13 +18,13 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 	"go.uber.org/zap"
 
-	"github.com/vposham/trustdoc/internal/bc/contracts"
 	"github.com/vposham/trustdoc/log"
 )
 
 // InstallContract installs the contract and returns the address
 func (k *Kaleido) InstallContract(ctx context.Context) (*common.Address, error) {
-	nonce, err := k.ethCl.PendingNonceAt(context.Background(), *k.from)
+	logger := log.GetLogger(ctx)
+	nonce, err := k.ethCl.PendingNonceAt(ctx, *k.from)
 	if err != nil {
 		return nil, fmt.Errorf("failed contractAddress get nonce: %w", err)
 	}
@@ -34,16 +34,17 @@ func (k *Kaleido) InstallContract(ctx context.Context) (*common.Address, error) 
 		Gas:      uint64(k.gasLimitOnTx),
 		To:       nil, // nil means contract creation
 		Value:    big.NewInt(k.amount),
-		Data:     common.FromHex(contracts.DocumentTokenMetaData.ABI),
+		Data:     common.FromHex(DocumentTokenMetaData.ABI),
 		V:        nil,
 		R:        nil,
 		S:        nil,
 	})
-	log.GetLogger(ctx).Info("installing contract...")
+	logger.Info("installing contract...")
 	receipt, err := k.sendAndWaitForMining(ctx, tx)
 	if err != nil {
 		return nil, fmt.Errorf("failed contractAddress install contract: %s", err)
 	}
+	logger.Debug("contract installed", zap.Any("receipt", receipt))
 	return receipt.ContractAddress, nil
 }
 
@@ -91,7 +92,7 @@ func (k *Kaleido) signAndSendTxn(ctx context.Context, tx *types.Transaction) (st
 func (k *Kaleido) waitUntilMined(ctx context.Context, start time.Time, txHash string,
 	retryDelay time.Duration) (*txnReceipt, error) {
 	isMined := false
-	attempts := 1
+	attempts := 0
 
 	var receipt txnReceipt
 	for !isMined {
@@ -144,4 +145,17 @@ type txnReceipt struct {
 	Status            *hexutil.Big    `json:"status"`
 	To                *common.Address `json:"to"`
 	TransactionIndex  *hexutil.Uint   `json:"transactionIndex"`
+}
+
+// generateTransaction creates a new transaction for the specified data
+func (k *Kaleido) generateTransaction(nonce uint64) *types.Transaction {
+	tx := types.NewTx(&types.LegacyTx{
+		Nonce:    nonce,
+		GasPrice: k.gasPrice,
+		Gas:      uint64(k.gasLimitOnTx),
+		To:       k.contractAddress,
+		Value:    nil,
+		Data:     nil, // set this
+	})
+	return tx
 }

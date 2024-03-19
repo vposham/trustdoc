@@ -137,7 +137,7 @@ solc:
 	solc --base-path ./ --include-path node_modules --abi internal/bc/contracts/DocumentToken.sol -o internal/bc/contracts --overwrite
 
 abigen:
-	abigen --abi internal/bc/contracts/DocumentToken.abi --pkg contracts --type DocumentToken --out internal/bc/contracts/DocumentToken.go
+	abigen --abi internal/bc/contracts/DocumentToken.abi --pkg bc --type DocumentToken --out internal/bc/DocumentToken.go
 
 cln:
 	rm -r internal/bc/contracts/*.abi
