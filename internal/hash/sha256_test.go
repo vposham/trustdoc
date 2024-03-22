@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestMd5_Hash(t *testing.T) {
+func TestSha256_Hash(t *testing.T) {
 	type args struct {
 		ctx context.Context
 		in  io.Reader
@@ -47,7 +47,7 @@ func TestMd5_Hash(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			m := Md5{}
+			m := Sha256{}
 			got, err := m.Hash(tt.args.ctx, tt.args.in)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Hash() error = %v, wantErr %v", err, tt.wantErr)

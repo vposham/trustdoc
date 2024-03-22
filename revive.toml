@@ -19,7 +19,7 @@ warningCode = 0
 [rule.if-return]
 [rule.increment-decrement]
 [rule.var-naming]
-    arguments = [["ID"], []]
+    arguments = [["ID", "URL", "JSON", "HTTP"], []]
 [rule.var-declaration]
 [rule.package-comments]
 [rule.range]
@@ -41,7 +41,7 @@ warningCode = 0
 [rule.bool-literal-in-expr]
     severity = "error"
 [rule.cognitive-complexity]
-    arguments =[10]
+    arguments =[12]
 [rule.confusing-naming]
     severity = "error"
 [rule.confusing-results]

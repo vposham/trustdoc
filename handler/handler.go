@@ -1,3 +1,4 @@
+// Package handler provides the endpoints implementation for this service's APIs.
 package handler
 
 import (
@@ -12,5 +13,5 @@ type DocH struct {
 	Db   dbtx.StoreIf
 	Blob blob.OpsIf
 	Bc   bc.OpsIf
-	H    hash.Md5
+	H    hash.Sha256
 }

@@ -6,7 +6,7 @@ import "context"
 type MockStore struct {
 	saveDocMetaFn         func(ctx context.Context, in DocMeta) error
 	getDocMetaFn          func(ctx context.Context, docId string) (DocMeta, error)
-	getDocMetaByDocHashFn func(ctx context.Context, docMd5Hash string) (DocMeta, error)
+	getDocMetaByDocHashFn func(ctx context.Context, docHash string) (DocMeta, error)
 }
 
 var _ StoreIf = (*MockStore)(nil)
@@ -27,9 +27,10 @@ func (m MockStore) GetDocMeta(ctx context.Context, docId string) (DocMeta, error
 	return DocMeta{}, nil
 }
 
-func (m MockStore) GetDocMetaByHash(ctx context.Context, docMd5Hash string) (DocMeta, error) {
+// GetDocMetaByHash - mock implementation of it for unit testing
+func (m MockStore) GetDocMetaByHash(ctx context.Context, docHash string) (DocMeta, error) {
 	if m.getDocMetaByDocHashFn != nil {
-		return m.getDocMetaByDocHashFn(ctx, docMd5Hash)
+		return m.getDocMetaByDocHashFn(ctx, docHash)
 	}
 	return DocMeta{}, nil
 }

@@ -55,7 +55,7 @@ func (s ServeConf) addBusinessEndpointsMiddlewares(router *gin.RouterGroup) {
 		s.MetricsLogger, s.ServerTiming)
 }
 
-func (s ServeConf) addBusinessEndpoints(c context.Context, router *gin.Engine) {
+func (s ServeConf) addBusinessEndpoints(_ context.Context, router *gin.Engine) {
 	svcRtr := router.Group("/svc")
 
 	// add all the middlewares

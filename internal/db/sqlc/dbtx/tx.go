@@ -22,9 +22,6 @@ import (
 //revive:disable:function-length,cognitive-complexity,cyclomatic
 
 const (
-	dbRetryCount    = 5
-	dbRetrySleepDur = time.Millisecond * 30
-
 	dbTxLatencyLKey  = "dbTxLatency"
 	dbTxAttemptLKey  = "dbAttempt"
 	dbRetrySleepLKey = "dbSleep"
@@ -35,8 +32,10 @@ var errDbTimeout = errors.New("db timeout")
 // Store struct provides all the valid business DB transactions. It implements StoreIf
 type Store struct {
 	Queries
-	db      DBConn
-	timeout time.Duration
+	db               DBConn
+	timeout          time.Duration
+	maxRetries       int
+	backOffMaxJitter time.Duration
 }
 
 // QueryBase is a wrapper for raw.queries that contains extra methods that allow mocking
@@ -55,15 +54,18 @@ func (qb *QueryBase) getTxInterface(tx *sql.Tx) Queries {
 func NewStore(db *sql.DB) *Store {
 	props := config.GetAll()
 	return &Store{
-		db:      db,
-		Queries: &QueryBase{raw.New(db)},
-		timeout: props.MustGetParsedDuration("postgres.db.source.timeout.dur"),
+		Queries:          &QueryBase{Queries: raw.New(db)},
+		db:               db,
+		timeout:          props.MustGetParsedDuration("postgres.db.timeout.dur"),
+		maxRetries:       props.MustGetInt("postgres.db.max.retries"),
+		backOffMaxJitter: props.MustGetParsedDuration("postgres.db.retry.backoff.max.jitter.dur"),
 	}
 }
 
 // execTx executes a function within a database transactions
 // return error in case the execution takes more time than timeout duration specified
 // reference - https://stackoverflow.com/questions/52799280/context-confusion-regarding-cancellation
+// core logic responsible for handling retry based pessimistic locking transactions
 func (store *Store) execTx(ctx context.Context, fn func(queries Queries) error) error {
 
 	logger := log.GetLogger(ctx)
@@ -72,7 +74,7 @@ func (store *Store) execTx(ctx context.Context, fn func(queries Queries) error) 
 
 	dbCtx, cancel := context.WithTimeout(ctx, store.timeout)
 
-	// this will be used in case where context is not cancelled and db responds with an err
+	// this will be used in case where context is not cancelled and db responds with an error
 	defer cancel()
 
 	// run db tx in separate go routine
@@ -136,17 +138,15 @@ func (store *Store) execTx(ctx context.Context, fn func(queries Queries) error) 
 	return errors.New("bug: db tx timeout logic shouldnt come here")
 }
 
-// execTxWithRetry executes execTx for dbRetryCount times by introducing a jitter of
-// random(1,7) * dbRetrySleepDur duration
+// execTxWithRetry executes execTx for maxRetries times by introducing a max jitter of backOffMaxJitter
 func (store *Store) execTxWithRetry(ctx context.Context, fn func(Queries) error) error {
 	logger := log.GetLogger(ctx)
 	var err error
-	for i := 0; i < dbRetryCount; i++ {
+	for i := 0; i < store.maxRetries; i++ {
 		if i > 0 {
-			sleepDur := time.Duration(randomInt(1, 6)) * dbRetrySleepDur
+			sleepDur := randomDur(store.backOffMaxJitter)
 			logger.Info("sleeping before retry",
-				zap.Duration(dbRetrySleepLKey, sleepDur),
-				zap.Int(dbTxAttemptLKey, i))
+				zap.Duration(dbRetrySleepLKey, sleepDur), zap.Int(dbTxAttemptLKey, i))
 			time.Sleep(sleepDur)
 		}
 		err = store.execTx(ctx, fn)
@@ -182,7 +182,11 @@ func (store *Store) execTxWithRetry(ctx context.Context, fn func(Queries) error)
 		// failed with a non retry-able failure
 		return err
 	}
-	return fmt.Errorf("failed after %d attempts, last error: %s", dbRetryCount, err)
+	return fmt.Errorf("failed after %d attempts, last error: %w", store.maxRetries, err)
+}
+
+func randomDur(max time.Duration) time.Duration {
+	return time.Duration(randomInt(0, int(max)))
 }
 
 // NewNullStr returns NullString with correct String and Valid fields

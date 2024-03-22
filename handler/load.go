@@ -51,7 +51,7 @@ func loadImpls(ctx context.Context) error {
 		concreteImpls[docHandlerImplKey] = &DocH{
 			Db:   dbtx.GetDbStore(),
 			Blob: blob.GetBlobStore(),
-			H:    hash.Md5{},
+			H:    hash.Sha256{},
 			Bc:   bc.GetBc(),
 		}
 	}

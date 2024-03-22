@@ -15,7 +15,7 @@ func TestSaveDocMeta(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test case 2: SaveDocMetaFn is set
-	mockStore.saveDocMetaFn = func(ctx context.Context, in DocMeta) error {
+	mockStore.saveDocMetaFn = func(_ context.Context, _ DocMeta) error {
 		return nil
 	}
 	err = mockStore.SaveDocMeta(context.Background(), DocMeta{})
@@ -32,7 +32,7 @@ func TestGetDocMeta(t *testing.T) {
 
 	// Test case 2: GetDocMetaFn is set
 	expectedDocMeta := DocMeta{}
-	mockStore.getDocMetaFn = func(ctx context.Context, docId string) (DocMeta, error) {
+	mockStore.getDocMetaFn = func(_ context.Context, _ string) (DocMeta, error) {
 		return expectedDocMeta, nil
 	}
 	result, err = mockStore.GetDocMeta(context.Background(), "123")

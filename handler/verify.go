@@ -11,6 +11,8 @@ import (
 	"github.com/vposham/trustdoc/pkg/rest"
 )
 
+// Verify handler takes in a document, owner email and blockchain tokenId and verifies if the document is valid
+// it checks the provided doc hash and owner email hash with the one stored in blockchain
 func (d *DocH) Verify(c *gin.Context) {
 	logger := log.GetLogger(c)
 	logger.Info("document verification request received")
@@ -21,7 +23,7 @@ func (d *DocH) Verify(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, verifyResp(false, err))
 		return
 	}
-	err = d.Bc.VerifyDocTkn(c, req.DocBcTkn, req.DocMd5Hash, req.OwnerEmailMd5Hash)
+	err = d.Bc.VerifyDocTkn(c, req.DocBcTkn, req.DocHash, req.OwnerEmailHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,
 			verifyResp(false, fmt.Errorf("unable to verify in blockchain - %w", err)))
@@ -50,14 +52,14 @@ func (d *DocH) verifyReq(c *gin.Context) (*rest.VerifyReq, error) {
 		return &req, fmt.Errorf("unable to open file - %w", err)
 	}
 
-	// generate md5 hash for the doc and owner email id
-	docMd5Hash, e1 := d.H.Hash(c, f)
-	ownerEmailIdMd5Hash, e2 := d.H.Hash(c, strings.NewReader(req.OwnerEmail))
+	// generate  hash for the doc and owner email id
+	docHash, e1 := d.H.Hash(c, f)
+	ownerEmailIdHash, e2 := d.H.Hash(c, strings.NewReader(req.OwnerEmail))
 	if e1 != nil || e2 != nil {
 		return &req, fmt.Errorf("unable to generate hash. docHashErr - %w. emailHashErr - %w", e1, e2)
 	}
-	req.DocMd5Hash = docMd5Hash
-	req.OwnerEmailMd5Hash = ownerEmailIdMd5Hash
+	req.DocHash = docHash
+	req.OwnerEmailHash = ownerEmailIdHash
 	return &req, nil
 }
 

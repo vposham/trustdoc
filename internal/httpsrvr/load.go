@@ -83,7 +83,7 @@ func loadImpls(_ context.Context) error {
 	return nil
 }
 
-// Start starts http server
+// Start starts http server. It also handles the Ctrl+C signal to gracefully shutdown the server.
 func Start(ctx context.Context, logger *zap.Logger, port string) {
 
 	logger.Info("service up and listening", zap.String("port", port))

@@ -19,12 +19,13 @@ type DocMeta struct {
 	DocTitle       string `json:"docTitle,omitempty"`
 	DocDesc        string `json:"docDesc,omitempty"`
 	DocName        string `json:"docName,omitempty"`
-	DocMd5Hash     string `json:"docMd5Hash,omitempty"`
+	DocHash        string `json:"docHash,omitempty"`
 	BcTknId        string `json:"bcTknId,omitempty"`
 	OwnerFirstName string `json:"ownerFirstName,omitempty"`
 	OwnerLastName  string `json:"ownerLastName,omitempty"`
 }
 
+// SaveDocMeta saves the document meta in postgres db with a retry based pessimistic locking transaction
 func (store *Store) SaveDocMeta(ctx context.Context, in DocMeta) error {
 	logger := log.GetLogger(ctx)
 	logger.Info("started db tx for saving document meta", zap.Any("docId", in.DocId))
@@ -43,12 +44,13 @@ func (store *Store) SaveDocMeta(ctx context.Context, in DocMeta) error {
 	})
 }
 
-func (store *Store) GetDocMetaByHash(ctx context.Context, docMd5Hash string) (DocMeta, error) {
+// GetDocMetaByHash gets the document meta from postgres db with a retry based pessimistic locking transaction
+func (store *Store) GetDocMetaByHash(ctx context.Context, docHash string) (DocMeta, error) {
 	logger := log.GetLogger(ctx)
-	logger.Info("started db tx for get document meta by hash", zap.Any("docMd5Hash", docMd5Hash))
+	logger.Info("started db tx for get document meta by hash", zap.Any("docHash", docHash))
 	var m DocMeta
 	err := store.execTxWithRetry(ctx, func(queries Queries) error {
-		doc, err := queries.GetDocByHash(ctx, docMd5Hash)
+		doc, err := queries.GetDocByHash(ctx, docHash)
 		if err != nil {
 			return err
 		}
@@ -62,7 +64,7 @@ func (store *Store) GetDocMetaByHash(ctx context.Context, docMd5Hash string) (Do
 			DocTitle:       doc.Title,
 			DocDesc:        doc.Description.String,
 			DocName:        doc.FileName,
-			DocMd5Hash:     doc.DocHash,
+			DocHash:        doc.DocHash,
 			BcTknId:        doc.DocMintedID,
 			OwnerFirstName: u.FirstName,
 			OwnerLastName:  u.LastName,
@@ -120,7 +122,7 @@ func saveDocMeta(ctx context.Context, queries Queries, in DocMeta, u *raw.User) 
 		Title:       in.DocTitle,
 		Description: sql.NullString{String: in.DocDesc, Valid: true},
 		FileName:    in.DocName,
-		DocHash:     in.DocMd5Hash,
+		DocHash:     in.DocHash,
 		DocMintedID: in.BcTknId,
 		UserID:      u.ID,
 	}

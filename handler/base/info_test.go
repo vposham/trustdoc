@@ -10,8 +10,8 @@ import (
 )
 
 func TestGetInfo(t *testing.T) {
-	router := gin.New()
 	gin.SetMode(gin.TestMode)
+	router := gin.New()
 	router.GET("/info", GetInfo)
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/info", nil)

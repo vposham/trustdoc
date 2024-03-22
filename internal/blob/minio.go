@@ -23,7 +23,7 @@ func (m *Minio) Put(ctx context.Context, doc io.Reader, size int64) (docId strin
 	logger := log.GetLogger(ctx)
 	docId = uuid.New().String()
 	logger.Info("started uploading document to minio", zap.String("docId", docId))
-	_, err = m.client.PutObject(ctx, m.bucketName, docId, doc, size, minio.PutObjectOptions{SendContentMd5: true})
+	_, err = m.client.PutObject(ctx, m.bucketName, docId, doc, size, minio.PutObjectOptions{})
 	if err != nil {
 		err = fmt.Errorf("failed to upload - %w", err)
 		logger.Error("failed to upload document", zap.String("docId", docId), zap.Error(err))

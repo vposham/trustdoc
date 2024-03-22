@@ -10,6 +10,7 @@ import (
 	"github.com/vposham/trustdoc/pkg/rest"
 )
 
+// Download handler exposes an endpoint to download the file using a docId
 func (d *DocH) Download(c *gin.Context) {
 	logger := log.GetLogger(c)
 	logger.Info("download request received")

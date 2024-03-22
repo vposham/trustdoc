@@ -23,6 +23,8 @@ type Queries interface {
 
 // StoreIf interface provides all the valid business DB transactions
 type StoreIf interface {
+	// SaveDocMeta stores the document meta in the db
 	SaveDocMeta(ctx context.Context, in DocMeta) error
-	GetDocMetaByHash(ctx context.Context, docMd5Hash string) (DocMeta, error)
+	// GetDocMetaByHash gets the document meta from the db
+	GetDocMetaByHash(ctx context.Context, docHash string) (DocMeta, error)
 }

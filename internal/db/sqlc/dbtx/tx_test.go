@@ -346,7 +346,7 @@ func TestStore_execTxWithRetry(t *testing.T) {
 			mock.ExpectBegin()
 			mock.ExpectCommit()
 		case "failed with retry able err in tx":
-			for i := 0; i < dbRetryCount; i++ {
+			for i := 0; i < 5; i++ {
 				mock.ExpectBegin()
 				mock.ExpectRollback()
 			}

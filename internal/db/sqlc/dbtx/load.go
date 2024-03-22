@@ -32,16 +32,16 @@ func loadImpls(_ context.Context) error {
 	props := config.GetAll()
 
 	if concreteImpls[dbExecKey] == nil {
-		dataSourceUrl := props.MustGetString("postgres.db.source.url")
+		dataSourceUrl := props.MustGetString("postgres.db.url")
 		dbDriver := props.MustGetString("postgres.sql.driver")
 		conn, err := sql.Open(dbDriver, dataSourceUrl)
 		if err != nil {
 			return err
 		}
-		conn.SetMaxIdleConns(props.MustGetInt("postgres.db.source.max.idle.conns"))
-		conn.SetMaxOpenConns(props.MustGetInt("postgres.db.source.max.open.conns"))
-		conn.SetConnMaxLifetime(props.MustGetParsedDuration("postgres.db.source.conn.max.dur"))
-		conn.SetConnMaxIdleTime(props.MustGetParsedDuration("postgres.db.source.timeout.dur"))
+		conn.SetMaxIdleConns(props.MustGetInt("postgres.db.max.idle.conns"))
+		conn.SetMaxOpenConns(props.MustGetInt("postgres.db.max.open.conns"))
+		conn.SetConnMaxLifetime(props.MustGetParsedDuration("postgres.db.conn.max.dur"))
+		conn.SetConnMaxIdleTime(props.MustGetParsedDuration("postgres.db.timeout.dur"))
 		var dbTxStore StoreIf = NewStore(conn)
 		concreteImpls[dbExecKey] = dbTxStore
 	}

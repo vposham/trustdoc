@@ -37,22 +37,17 @@ func GetAll() *props.Properties {
 	return x
 }
 
-func loadImpls(ctx context.Context, dir string) error {
+func loadImpls(_ context.Context, dir string) error {
 	if concreteImpls[propsImplKey] == nil {
-		allProps, err := load(ctx, dir)
+		filesToLoad := []string{dir + "/app.properties"}
+		if v, found := os.LookupEnv(envDetectorKey); found {
+			filesToLoad = append(filesToLoad, dir+"/app-"+v+".properties")
+		}
+		p, err := props.LoadFiles(filesToLoad, props.UTF8, false)
 		if err != nil {
 			return fmt.Errorf("failed to load properties - %w", err)
 		}
-		concreteImpls[propsImplKey] = allProps
+		concreteImpls[propsImplKey] = p
 	}
 	return nil
-}
-
-func load(_ context.Context, resourceDir string) (p *props.Properties, err error) {
-	filesToLoad := []string{resourceDir + "/app.properties"}
-	if v, found := os.LookupEnv(envDetectorKey); found {
-		filesToLoad = append(filesToLoad, resourceDir+"/app-"+v+".properties")
-	}
-	p, err = props.LoadFiles(filesToLoad, props.UTF8, false)
-	return
 }

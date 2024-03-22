@@ -32,7 +32,7 @@ It uses following infrastructure:
 ## Technical notes:
 
 1. The microservice is developed in golang using go-gin.
-2. It uses gorm as an ORM for postgres.
+2. It uses sqlc for SQL operations on postgres.
 3. It uses minio-go for interacting with minio.
 4. It uses low level functions like eth_sendRawTransaction to interact with Kaleido when installing a new contract.
 5. It uses abigen to generate go bindings for the contract.

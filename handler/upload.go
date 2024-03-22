@@ -15,6 +15,8 @@ import (
 	"github.com/vposham/trustdoc/pkg/rest"
 )
 
+// Upload handler is responsible for uploading a document in blob store, minting a new token in blockchain and
+// stores all the metadata of the document in db
 func (d *DocH) Upload(c *gin.Context) {
 
 	logger := log.GetLogger(c)
@@ -28,7 +30,7 @@ func (d *DocH) Upload(c *gin.Context) {
 	}
 
 	var exists bool
-	doc, err := d.Db.GetDocMetaByHash(c, req.DocMd5Hash)
+	doc, err := d.Db.GetDocMetaByHash(c, req.DocHash)
 	if err == nil {
 		exists = true
 	} else {
@@ -55,7 +57,7 @@ func (d *DocH) Upload(c *gin.Context) {
 	}
 
 	// mint a new tkn in blockchain
-	bcTknId, err := d.Bc.MintDocTkn(c, docId, req.DocMd5Hash, req.OwnerEmailMd5Hash)
+	bcTknId, err := d.Bc.MintDocTkn(c, docId, req.DocHash, req.OwnerEmailHash)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, uploadResp(nil, fmt.Errorf("unable to sign in blockchain - %w", err)))
 		return
@@ -66,7 +68,7 @@ func (d *DocH) Upload(c *gin.Context) {
 		OwnerEmail:     req.OwnerEmail,
 		DocTitle:       req.DocTitle,
 		DocDesc:        req.DocDesc,
-		DocMd5Hash:     req.DocMd5Hash,
+		DocHash:        req.DocHash,
 		BcTknId:        bcTknId,
 		DocName:        req.MpFileHeader.Filename,
 		OwnerFirstName: req.OwnerFirstName,
@@ -102,14 +104,14 @@ func (d *DocH) uploadReq(c *gin.Context) (*rest.UploadReq, error) {
 		return &req, fmt.Errorf("unable to open file - %w", err)
 	}
 
-	// generate md5 hash for the doc and owner email id
-	docMd5Hash, e1 := d.H.Hash(c, f)
-	ownerEmailIdMd5Hash, e2 := d.H.Hash(c, strings.NewReader(req.OwnerEmail))
+	// generate sha hash for the doc and owner email id
+	docHash, e1 := d.H.Hash(c, f)
+	ownerEmailIdHash, e2 := d.H.Hash(c, strings.NewReader(req.OwnerEmail))
 	if e1 != nil || e2 != nil {
 		return &req, fmt.Errorf("unable to generate hash. docHashErr - %w. emailHashErr - %w", e1, e2)
 	}
-	req.DocMd5Hash = docMd5Hash
-	req.OwnerEmailMd5Hash = ownerEmailIdMd5Hash
+	req.DocHash = docHash
+	req.OwnerEmailHash = ownerEmailIdHash
 	return &req, nil
 }
 
