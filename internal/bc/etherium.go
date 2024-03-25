@@ -3,9 +3,13 @@ package bc
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
+	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -22,6 +26,7 @@ var _ OpsIf = (*Etherium)(nil)
 
 // Etherium is an implementation of OpsIf
 type Etherium struct {
+	httpUrl         string
 	from            *common.Address
 	privateKey      *ecdsa.PrivateKey
 	signer          types.EIP155Signer
@@ -37,8 +42,14 @@ type Etherium struct {
 func (k *Etherium) MintDocTkn(ctx context.Context, docId, docHash, ownerEmailHash string) (string, error) {
 	logger := log.GetLogger(ctx)
 	logger.Info("creating new docTkn", zap.String("docId", docId))
+	n, err := k.ethCl.PendingNonceAt(ctx, *k.from)
+	if err != nil {
+		return "", fmt.Errorf("failed to get nonce: %w", err)
+
+	}
 	tx, err := k.docTkn.MintDocument(&bind.TransactOpts{
-		From:     *k.from,
+		From:     *k.contractAddress,
+		Nonce:    big.NewInt(int64(n)),
 		Signer:   k.sign,
 		GasPrice: k.gasPrice,
 		GasLimit: uint64(k.gasLimitOnTx),
@@ -88,27 +99,39 @@ func (k *Etherium) sign(_ common.Address, t *types.Transaction) (*types.Transact
 func (k *Etherium) VerifyDocTkn(ctx context.Context, tknId, docHash, ownerEmailHash string) (err error) {
 	logger := log.GetLogger(ctx)
 	logger.Info("verifying a docTkn", zap.String("docTkn", tknId))
-	h := common.HexToHash(tknId)
-	bcDocHash, err := k.docTkn.GetDocumentContent(&bind.CallOpts{
-		// Pending: true,
-		// From:    *k.contractAddress,
-		Context: ctx,
-	}, h.Big())
+	parsedURL, err := url.Parse(k.httpUrl)
 	if err != nil {
-		return fmt.Errorf("failed contractAddress verify docTkn: %w", err)
+		fmt.Println("Error parsing URL:", err)
+		return
 	}
 
-	bcDocOwnerHash, err := k.docTkn.GetDocumentOwner(&bind.CallOpts{
-		// From:    *k.contractAddress,
-		Context: ctx,
-	}, h.Big())
+	// Extract username and password from the URL
+	username := parsedURL.User.Username()
+	password, _ := parsedURL.User.Password()
+	hostStr := strings.ReplaceAll(parsedURL.Host, "rpc", "connect")
+	getUrl := fmt.Sprintf("%s://%s/gateways/gw/%s/getDocumentContent?_tokenId=%s", parsedURL.Scheme, hostStr,
+		k.contractAddress.Hex(), tknId)
+	req, err := http.NewRequest("GET", getUrl, nil)
 	if err != nil {
-		return fmt.Errorf("failed contractAddress verify docTkn: %w", err)
+		return
 	}
-
-	if bcDocHash == docHash && bcDocOwnerHash == ownerEmailHash {
+	req.SetBasicAuth(username, password)
+	r, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return errors.New("docTkn verification failed" + err.Error())
+	}
+	var target GetDocContentResp
+	err = json.NewDecoder(r.Body).Decode(&target)
+	if err != nil {
+		return err
+	}
+	if target.Output == docHash {
 		logger.Info("docTkn verified")
 		return nil
 	}
 	return errors.New("docTkn verification failed")
+}
+
+type GetDocContentResp struct {
+	Output string `json:"output"`
 }

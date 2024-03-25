@@ -69,13 +69,15 @@ func loadImpls(ctx context.Context) error {
 		logger.Info("fromAdd", zap.String("fromAdd", fromAdd.String()))
 
 		ethCl := ethclient.NewClient(rpcClient)
-		conAdd := common.HexToAddress(props.MustGetString("kaleido.smart.contract.address"))
+		conAddStr := props.MustGetString("kaleido.smart.contract.address")
+		conAdd := common.HexToAddress(conAddStr)
 		gasPrice, err := ethCl.SuggestGasPrice(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to get gas price: %w", err)
 		}
 
 		k := Etherium{
+			httpUrl:         httpUrl,
 			from:            &fromAdd,
 			privateKey:      signKey,
 			signer:          types.NewEIP155Signer(big.NewInt(chainId)),
@@ -86,6 +88,7 @@ func loadImpls(ctx context.Context) error {
 			docTkn:          nil, // sets it below
 		}
 
+		fmt.Println("contractAddress", k.contractAddress)
 		instance, err := NewDocumentToken(*k.contractAddress, ethCl)
 		if err != nil {
 			return fmt.Errorf("failed to instantiate a smart contract: %w", err)

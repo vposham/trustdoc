@@ -63,6 +63,7 @@ services:
       DOC_MINIO_ACCESS_SECRET_KEY: CHANGEME123
       KALEIDO_NODE_API_URL: ${KALEIDO_NODE_API_URL}
       SIGN_PRIV_KEY: ${SIGN_PRIV_KEY}
+      DOCTRUST_SMART_CONTRACT_ADDRESS: ${DOCTRUST_SMART_CONTRACT_ADDRESS}
       DOC_DB_SOURCE_URL: postgresql://root:secret@postgres:5432/doc_db?sslmode=disable
     depends_on:
       - postgres
