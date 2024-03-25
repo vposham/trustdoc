@@ -3,6 +3,7 @@ services:
 
   postgres:
     image: postgres:16.2-alpine3.19
+    container_name: postgres_container
     environment:
       POSTGRES_PASSWORD: secret
       POSTGRES_USER: root
@@ -21,6 +22,7 @@ services:
 
   minio:
     image: minio/minio:latest
+    container_name: minio_container
     environment:
       MINIO_ROOT_USER: minio
       MINIO_ROOT_PASSWORD: CHANGEME123
@@ -40,8 +42,10 @@ services:
 
   miniocreatebuckets:
     image: minio/mc
+    container_name: minio_create_buckets_container
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc config host add myminio http://minio:9000 minio CHANGEME123;
@@ -55,15 +59,76 @@ services:
 
   app:
     build: .
+    container_name: doctrust_app_container
     ports:
       - "8080:8080"
     environment:
       DOC_MINIO_ENDPOINT_URL: minio:9000
       DOC_MINIO_ACCESS_KEY_ID: minio
       DOC_MINIO_ACCESS_SECRET_KEY: CHANGEME123
-      KALEIDO_NODE_API_URL: ${KALEIDO_NODE_API_URL}
-      SIGN_PRIV_KEY: ${SIGN_PRIV_KEY}
+      KALEIDO_NODE_API_URL: http://geth:8545/
+      SIGN_PRIV_KEY: fc112485ce0c3de2bf7ecb9d02149654b3738ffc62d150f2384c97ca326fd6f1
       DOC_DB_SOURCE_URL: postgresql://root:secret@postgres:5432/doc_db?sslmode=disable
     depends_on:
-      - postgres
-      - minio
+      postgres:
+        condition: service_healthy
+      miniocreatebuckets:
+        condition: service_completed_successfully
+      gethsetup:
+        condition: service_completed_successfully
+    healthcheck:
+      test: curl --fail http://localhost:8080/health || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  geth:
+    image: ethereum/client-go:stable
+    ports:
+      - "8545:8545"
+    stop_grace_period: 2m
+    volumes:
+      - ./gethData:/data
+    healthcheck:
+      test: [ 'CMD-SHELL', 'netstat -ltn | grep -c ":8545"' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    entrypoint:
+      >
+      /bin/sh -c "
+      rm -rf /data/geth;
+      rm -rf /data/keystore;
+      geth --datadir=/data --rpc.gascap=0 --verbosity 3 --password /data/config/password.txt --dev --txpool.locals=0x6de474b24be2ca39d454ab92fe812bd1784aeb22 --rpc.enabledeprecatedpersonal=true --allow-insecure-unlock --nousb --dev.period=1 --mine --http --miner.gasprice=1 --miner.gaslimit=10000 --http.api eth,web3,net,personal,miner --http.addr=0.0.0.0 --http.vhosts=* --http.corsdomain=*
+      "
+# --rpc.allow-unprotected-txs=true
+#      geth --datadir=/data --dev -dev.period 1 --dev.gaslimit=11500000 --syncmode=full --mine --password=/data/config/password.txt --http --http.api=eth,net,web3 --http.addr=0.0.0.0 --http.vhosts=* --http.corsdomain=*
+
+  gethsetup:
+    image: ethereum/client-go:stable
+    volumes:
+      - ./gethData:/data
+    entrypoint:
+      >
+      /bin/sh -c "
+      geth --datadir=/data --password /data/config/password.txt account import /data/config/keyfile;
+      sleep 5;
+      geth attach --exec 'eth.accounts' /data/geth.ipc;
+      geth attach --exec 'web3.eth.sendTransaction({from:eth.accounts[0],to:eth.accounts[1],value:9931000000})' /data/geth.ipc;
+      geth attach --exec 'web3.personal.unlockAccount(\"0x6de474b24be2ca39d454ab92fe812bd1784aeb22\",\"password\")' /data/geth.ipc;
+      exit 0;
+      "
+    depends_on:
+      geth:
+        condition: service_healthy
+
+
+#      geth attach --exec 'miner.setEtherbase(eth.accounts[1])' /data/geth.ipc;
+#      rm -rf /data/geth;
+#      rm -rf /data/keystore;
+#      rm /data/account.txt;
+#      geth attach --exec 'personal.unlockAccount(eth.accounts[1], "password", 1000)' /data/geth.ipc;
+#            geth attach --exec 'miner.start()' /data/geth.ipc;
+
+
+#

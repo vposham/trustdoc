@@ -18,6 +18,9 @@ RUN sed -i 's#https:\/\/petstore.swagger.io\/v2\/swagger.json#..\/swagger.json#g
 
 WORKDIR /go/src/trustdoc
 
+# Dependencies for project which use cgo like etherium
+RUN apk update && apk add --no-progress --no-cache gcc musl-dev
+
 # Caching all external dependencies in docker context
 COPY go.mod .
 COPY go.sum .
@@ -25,9 +28,6 @@ RUN go mod download
 
 # Copy the source from the current directory
 COPY . .
-
-# Dependencies for project which use cgo like etherium
-RUN apk update && apk add --no-progress --no-cache gcc musl-dev
 
 RUN go build -ldflags "-X github.com/vposham/trustdoc/handler/base.GitCommitId=$GitCommitId" \
     -o /go/src/trustdoc/app -tags musl

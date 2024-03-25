@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	ethrpc "github.com/ethereum/go-ethereum/rpc"
 	"go.uber.org/zap"
 
 	"github.com/vposham/trustdoc/log"
@@ -22,14 +23,18 @@ var _ OpsIf = (*Etherium)(nil)
 
 // Etherium is an implementation of OpsIf
 type Etherium struct {
-	from            *common.Address
-	privateKey      *ecdsa.PrivateKey
-	signer          types.EIP155Signer
-	contractAddress *common.Address
-	gasLimitOnTx    int64
-	gasPrice        *big.Int
-	ethCl           *ethclient.Client
-	docTkn          *DocumentToken
+	rpc                    *ethrpc.Client
+	from                   *common.Address
+	privateKey             *ecdsa.PrivateKey
+	signer                 types.EIP155Signer
+	contractAddress        *common.Address
+	gasLimitOnTx           int64
+	gasPrice               *big.Int
+	ethCl                  *ethclient.Client
+	docTkn                 *DocumentToken
+	receiptWaitMinDuration time.Duration
+	receiptWaitMaxDuration time.Duration
+	rpcTimeout             time.Duration
 }
 
 // MintDocTkn creates a new docTkn in Kaleido Etherium private blockchain by using MintDocument method of
@@ -37,8 +42,13 @@ type Etherium struct {
 func (k *Etherium) MintDocTkn(ctx context.Context, docId, docHash, ownerEmailHash string) (string, error) {
 	logger := log.GetLogger(ctx)
 	logger.Info("creating new docTkn", zap.String("docId", docId))
+	nonce, err := k.ethCl.PendingNonceAt(ctx, *k.from)
+	if err != nil {
+		return "", fmt.Errorf("failed contractAddress get nonce: %w", err)
+	}
 	tx, err := k.docTkn.MintDocument(&bind.TransactOpts{
-		From:     *k.from,
+		Nonce:    big.NewInt(int64(nonce)),
+		From:     *k.contractAddress,
 		Signer:   k.sign,
 		GasPrice: k.gasPrice,
 		GasLimit: uint64(k.gasLimitOnTx),
@@ -88,27 +98,51 @@ func (k *Etherium) sign(_ common.Address, t *types.Transaction) (*types.Transact
 func (k *Etherium) VerifyDocTkn(ctx context.Context, tknId, docHash, ownerEmailHash string) (err error) {
 	logger := log.GetLogger(ctx)
 	logger.Info("verifying a docTkn", zap.String("docTkn", tknId))
-	h := common.HexToHash(tknId)
+	tkn := new(big.Int)
+	tkn, success := tkn.SetString(tknId, 10)
+	if !success {
+		return fmt.Errorf("failed to parse given tokenId %s", tknId)
+	}
+
+	// a, _ := DocumentTokenMetaData.GetAbi() // var out string
+	// data, err := a.Pack("getDocumentContent", tkn)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to pack data: %w", err)
+	// }
+	// msg := ethereum.CallMsg{From: *k.from, To: k.contractAddress, Data: []byte("0x" + hex.EncodeToString(data))}
+	// output, err := k.ethCl.CallContract(ctx, msg, nil)
+	// if err != nil {
+	// 	return err
+	// }
+	// resp, err := a.Unpack("getDocumentContent", output)
+	// bcDocHash, err := k.docTkn.GetDocumentContent(&bind.CallOpts{
+	// 	From:    *k.contractAddress,
+	// 	Context: ctx,
+	// }, tkn)
 	bcDocHash, err := k.docTkn.GetDocumentContent(&bind.CallOpts{
 		// Pending: true,
 		// From:    *k.contractAddress,
 		Context: ctx,
-	}, h.Big())
+	}, tkn)
 	if err != nil {
 		return fmt.Errorf("failed contractAddress verify docTkn: %w", err)
 	}
 
-	bcDocOwnerHash, err := k.docTkn.GetDocumentOwner(&bind.CallOpts{
-		// From:    *k.contractAddress,
-		Context: ctx,
-	}, h.Big())
-	if err != nil {
-		return fmt.Errorf("failed contractAddress verify docTkn: %w", err)
-	}
+	fmt.Println("bcDocHash", bcDocHash)
+	// logger.Info("docTkn verified", zap.Any("resp", resp))
 
-	if bcDocHash == docHash && bcDocOwnerHash == ownerEmailHash {
-		logger.Info("docTkn verified")
-		return nil
-	}
-	return errors.New("docTkn verification failed")
+	// bcDocOwnerHash, err := k.docTkn.GetDocumentOwner(&bind.CallOpts{
+	// 	// Pending: false,
+	// 	From:    *k.from,
+	// 	Context: ctx,
+	// }, tkn)
+	// if err != nil {
+	// 	return fmt.Errorf("get doc owner - %w", err)
+	// }
+
+	// if bcDocHash == docHash {
+	// 	logger.Info("docTkn verified")
+	// 	return nil
+	// }
+	return errors.New("docTkn verification failed, contents were altered")
 }

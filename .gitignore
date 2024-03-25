@@ -54,3 +54,7 @@ notes.txt
 # node
 node_modules/
 npm-debug.log
+
+# ethereum data store for local development
+gethData/*
+!gethData/config
