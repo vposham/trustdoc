@@ -80,3 +80,8 @@ Use newman to run the integration tests, the collection is present in the `docs`
 1. Fix the verifyAuthenticity API.
 2. Add a RPC lister or NATS Jetstream event listener to check if transactions are mined after x duration.
 3. Add more unit tests.
+
+
+https://medium.com/@m.vanderwijden1/web3-go-part-2-aebdcb8d926e
+https://ethereum.stackexchange.com/questions/65289/my-contract-is-not-emitting-events
+https://goethereumbook.org/event-subscribe/

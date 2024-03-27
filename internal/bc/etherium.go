@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/event"
 	ethrpc "github.com/ethereum/go-ethereum/rpc"
 	"go.uber.org/zap"
 
@@ -46,41 +47,98 @@ func (k *Etherium) MintDocTkn(ctx context.Context, docId, docHash, ownerEmailHas
 	if err != nil {
 		return "", fmt.Errorf("failed contractAddress get nonce: %w", err)
 	}
-	tx, err := k.docTkn.MintDocument(&bind.TransactOpts{
+	txops := &bind.TransactOpts{
 		Nonce:    big.NewInt(int64(nonce)),
-		From:     *k.contractAddress,
+		From:     *k.from,
 		Signer:   k.sign,
 		GasPrice: k.gasPrice,
 		GasLimit: uint64(k.gasLimitOnTx),
 		Context:  ctx,
-	}, docId, docHash, ownerEmailHash)
+	}
+
+	tx, err := k.docTkn.MintDocument(txops, docId, docHash, ownerEmailHash)
 	if err != nil {
 		return "", fmt.Errorf("failed to mint new docTkn: %w", err)
 	}
+	ctx, cncl := context.WithTimeout(ctx, 45*time.Second)
+	defer cncl()
 
-	logger.Info("signed and sent docTkn for mining", zap.Any("bcTxHash", tx.Hash().Hex()))
+	// a, _ := DocumentTokenMetaData.GetAbi()
+
+	// xyz := make(chan types.Log)
+	// s, err := k.ethCl.SubscribeFilterLogs(ctx, ethereum.FilterQuery{
+	// 	BlockHash: nil,
+	// 	FromBlock: nil,
+	// 	ToBlock:   nil,
+	// 	Addresses: []common.Address{*k.contractAddress},
+	// 	Topics:    nil,
+	// }, xyz)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to watch docTkn: %w", err)
+	// }
+	// for {
+	// 	select {
+	// 	case <-ctx.Done():
+	// 		return "", fmt.Errorf("context cancelled")
+	// 	case <-s.Err():
+	// 		return "", fmt.Errorf("watch error")
+	// 	case v := <-xyz:
+	// 		return v.TxHash.String(), fmt.Errorf("watched")
+	// 	}
+	// }
+
+	xyz := make(chan *DocumentTokenDocumentMinted)
+	var s event.Subscription
+
+	time.Sleep(5 * time.Second)
+	s, err = k.docTkn.WatchDocumentMinted(&bind.WatchOpts{Context: ctx}, xyz)
+	if err != nil {
+		fmt.Println("failed to watch docTkn: %w", err)
+	}
+
+	var receipt map[string]interface{}
+	err = k.rpc.CallContext(ctx, &receipt, "eth_getTransactionReceipt", tx.Hash().Hex())
+	if err != nil {
+		return "", fmt.Errorf("failed to mint new docTkn: %w", err)
+	}
+	logger.Info("signed and sent docTkn for mining", zap.Any("tx", tx), zap.Any("receipt", receipt))
+
+	for {
+		select {
+		case <-ctx.Done():
+			return "", fmt.Errorf("context cancelled")
+		case <-s.Err():
+			return "", fmt.Errorf("watch error")
+		case v := <-xyz:
+			return v.TokenId.String(), fmt.Errorf("watched")
+		}
+	}
 
 	// TODO - ideally we shouldnt timelimit on mining and create a event driven system
 	// TODO - for these requirements, but for now we will limit the mining time
 	// limit time for mining
-	ctx, cancel := context.WithTimeout(ctx, 45*time.Second)
-	defer cancel()
-	receipt, err := bind.WaitMined(ctx, k.ethCl, tx)
-	if err != nil {
-		return "", fmt.Errorf("failed to mine docTkn: %w", err)
-	}
-	logger.Info("new docTkn created, mining complete")
+
+	// k.docTkn.Sub
+
+	// ctx, cancel := context.WithTimeout(ctx, 45*time.Second)
+	// defer cancel()
+	// fmt.Printf("to %v\n", tx.To())
+	// receipt, err := bind.WaitMined(ctx, k.ethCl, tx)
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to mine docTkn: %w", err)
+	// }
+	// logger.Info("new docTkn created, mining complete")
 
 	var docTkn string
-	for _, l := range receipt.Logs {
-		minted, unpackErr := k.docTkn.ParseDocumentMinted(*l)
-		if unpackErr == nil {
-			docTkn = minted.TokenId.String()
-		}
-	}
+	// for _, l := range receipt.Logs {
+	// 	minted, unpackErr := k.docTkn.ParseDocumentMinted(*l)
+	// 	if unpackErr == nil {
+	// 		docTkn = minted.TokenId.String()
+	// 	}
+	// }
 
 	if docTkn == "" {
-		logger.Error("failed to mint new docTkn", zap.Any("receipt", receipt))
+		logger.Error("failed to mint new docTkn")
 		return docTkn, fmt.Errorf("failed to mint new docTkn")
 	}
 

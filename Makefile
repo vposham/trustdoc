@@ -133,7 +133,7 @@ npmUpsMjr:
 sol2go: solc abigen cln
 
 solc:
-	solc --base-path ./ --include-path node_modules --abi internal/bc/contracts/DocumentToken.sol -o internal/bc/contracts --overwrite
+	solc --base-path ./ --include-path ./node_modules --evm-version berlin --input-file ./internal/bc/contracts/DocumentToken.sol --abi --output-dir ./internal/bc/contracts --overwrite
 
 abigen:
 	abigen --abi internal/bc/contracts/DocumentToken.abi --pkg bc --type DocumentToken --out internal/bc/DocumentToken.go
@@ -142,7 +142,7 @@ cln:
 	rm -r internal/bc/contracts/*.abi
 
 solccompile:
-	solc --base-path ./ --combined-json bin,bin-runtime,srcmap,srcmap-runtime,abi,userdoc,devdoc,metadata  --optimize --evm-version berlin --allow-paths . --include-path ./node_modules ./internal/bc/contracts/DocumentToken.sol
+	solc --base-path ./ --include-path ./node_modules --evm-version berlin --input-file ./internal/bc/contracts/DocumentToken.sol
 
 ##########################################  CONTAINERIZE  ####################################################
 

@@ -86,6 +86,7 @@ services:
     image: ethereum/client-go:stable
     ports:
       - "8545:8545"
+      - "8546:8546"
     stop_grace_period: 2m
     volumes:
       - ./gethData:/data
@@ -99,10 +100,8 @@ services:
       /bin/sh -c "
       rm -rf /data/geth;
       rm -rf /data/keystore;
-      geth --datadir=/data --rpc.gascap=0 --verbosity 3 --password /data/config/password.txt --dev --txpool.locals=0x6de474b24be2ca39d454ab92fe812bd1784aeb22 --rpc.enabledeprecatedpersonal=true --allow-insecure-unlock --nousb --dev.period=1 --mine --http --miner.gasprice=1 --miner.gaslimit=10000 --http.api eth,web3,net,personal,miner --http.addr=0.0.0.0 --http.vhosts=* --http.corsdomain=*
+      geth --datadir=/data --rpc.gascap=0 --verbosity 3 --allow-insecure-unlock --password /data/config/password.txt --dev --txpool.locals=0x6de474b24be2ca39d454ab92fe812bd1784aeb22 --rpc.enabledeprecatedpersonal=true --nousb --dev.period=1 --mine --http --ws --miner.gasprice=0 --miner.gaslimit=10000 --http.api eth,web3,net,personal,miner --ws.api eth,web3,net,personal,miner --ws.origins=* --ws.rpcprefix / --ws.addr=0.0.0.0 --http.addr=0.0.0.0 --http.vhosts=* --http.corsdomain=*
       "
-# --rpc.allow-unprotected-txs=true
-#      geth --datadir=/data --dev -dev.period 1 --dev.gaslimit=11500000 --syncmode=full --mine --password=/data/config/password.txt --http --http.api=eth,net,web3 --http.addr=0.0.0.0 --http.vhosts=* --http.corsdomain=*
 
   gethsetup:
     image: ethereum/client-go:stable
@@ -114,7 +113,7 @@ services:
       geth --datadir=/data --password /data/config/password.txt account import /data/config/keyfile;
       sleep 5;
       geth attach --exec 'eth.accounts' /data/geth.ipc;
-      geth attach --exec 'web3.eth.sendTransaction({from:eth.accounts[0],to:eth.accounts[1],value:9931000000})' /data/geth.ipc;
+      geth attach --exec 'web3.eth.sendTransaction({from:eth.accounts[0],to:eth.accounts[1],value:9931000000000})' /data/geth.ipc;
       geth attach --exec 'web3.personal.unlockAccount(\"0x6de474b24be2ca39d454ab92fe812bd1784aeb22\",\"password\")' /data/geth.ipc;
       exit 0;
       "
@@ -129,6 +128,12 @@ services:
 #      rm /data/account.txt;
 #      geth attach --exec 'personal.unlockAccount(eth.accounts[1], "password", 1000)' /data/geth.ipc;
 #            geth attach --exec 'miner.start()' /data/geth.ipc;
+# --rpc.allow-unprotected-txs=true --allow-insecure-unlock
+#      geth --datadir=/data --dev -dev.period 1 --dev.gaslimit=11500000 --syncmode=full --mine --password=/data/config/password.txt --http --http.api=eth,net,web3 --http.addr=0.0.0.0 --http.vhosts=* --http.corsdomain=*
 
 
-#
+#miner.setEtherbase(eth.accounts[0])
+#miner.start()
+#personal.unlockAccount(eth.accounts[1])
+#eth.getTransactionReceipt("
+#  geth attach /data/geth.ipc

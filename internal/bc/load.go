@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"net"
-	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -46,7 +44,7 @@ func Load(ctx context.Context) error {
 func loadImpls(ctx context.Context) error {
 	props := config.GetAll()
 	if concreteImpls[bcExecKey] == nil {
-		httpUrl := props.MustGetString("kaleido.node.https.api.url")
+		wssUrl := props.MustGetString("kaleido.node.wss.api.url")
 		logger := log.GetLogger(ctx)
 
 		// load private signing keys
@@ -57,13 +55,13 @@ func loadImpls(ctx context.Context) error {
 		}
 
 		// load blockchain transport layer
-		rpcClient, err := ethrpc.DialOptions(ctx, httpUrl, ethrpc.WithHTTPClient(loadBcHttpClient(ctx)))
+		rpcClient, err := ethrpc.DialOptions(ctx, wssUrl)
 		if err != nil {
 			return fmt.Errorf("connection to kaliedo blockchain failed: %w", err)
 		}
 
 		// get node chainId. This is needed for EIP155 signing
-		chainId, err := getNetworkID(ctx, httpUrl)
+		chainId, err := getNetworkID(ctx, rpcClient)
 		if err != nil {
 			return err
 		}
@@ -94,29 +92,31 @@ func loadImpls(ctx context.Context) error {
 
 		// var instance *DocumentToken
 		if conAddStr == "" {
-			// auth, err := bind.NewKeyedTransactorWithChainID(signKey, big.NewInt(chainId))
-			// if err != nil {
-			// 	return err
-			// }
-			// auth.GasPrice = k.gasPrice
-			// auth.From = fromAdd
-			// auth.GasLimit = uint64(k.gasLimitOnTx)
-			contractAdd, err := k.InstallContract(ctx)
+			auth, err := bind.NewKeyedTransactorWithChainID(signKey, big.NewInt(chainId))
+			if err != nil {
+				return err
+			}
+			auth.GasPrice = k.gasPrice
+			auth.GasLimit = uint64(k.gasLimitOnTx)
+			contractAdd, _, ins, err := DeployDocTknAbi(ctx, auth, ethCl)
+
+			// contractAdd, err := k.InstallContract(ctx)
 			if err != nil {
 				return fmt.Errorf("failed to deploy new contract: %w", err)
 			}
-			k.contractAddress = contractAdd
-			conAddStr = contractAdd.Hex()
+			k.contractAddress = &contractAdd
+			k.docTkn = ins
+			// conAddStr = contractAdd.Hex()
 		}
 
 		// conAdd := common.HexToAddress(conAddStr)
 
 		// if instance == nil {
-		ins, err := NewDocumentToken(*k.contractAddress, ethCl)
+		// ins, err := NewDocumentToken(*k.contractAddress, ethCl)
 		if err != nil {
 			return fmt.Errorf("failed to instantiate a smart contract: %w", err)
 		}
-		k.docTkn = ins
+		// k.docTkn = ins
 		// }
 		var kOps OpsIf = &k
 		concreteImpls[bcExecKey] = kOps
@@ -158,37 +158,10 @@ func GetBc() OpsIf {
 	return v.(OpsIf)
 }
 
-// loadBcHttpClient loads all config for http client which talks to blockchain nodes
-func loadBcHttpClient(_ context.Context) *http.Client {
-	props := config.GetAll()
-	return &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConns:    props.MustGetInt("kaleido.blockchain.http.client.max.conns"),
-			MaxConnsPerHost: props.MustGetInt("kaleido.blockchain.http.client.max.conns.per.host"),
-			MaxIdleConnsPerHost: props.
-				MustGetInt("kaleido.blockchain.http.client.max.idle.conns.per.host"),
-			IdleConnTimeout: props.
-				MustGetParsedDuration("kaleido.blockchain.http.client.idle.conn.timeout"),
-			DialContext: (&net.Dialer{
-				KeepAlive: props.MustGetParsedDuration("kaleido.blockchain.http.client.dail.keepalive"),
-				Timeout:   props.MustGetParsedDuration("kaleido.blockchain.http.client.dail.timeout"),
-			}).DialContext,
-			TLSHandshakeTimeout: props.
-				MustGetParsedDuration("kaleido.blockchain.http.client.tls.timeout"),
-		},
-		Timeout: props.MustGetParsedDuration("kaleido.blockchain.http.client.total.timeout"),
-	}
-}
-
 // getNetworkID returns the network ID from the node
-func getNetworkID(ctx context.Context, url string) (int64, error) {
-	rpc, err := ethrpc.Dial(url)
-	if err != nil {
-		return 0, fmt.Errorf("connect to %s failed: %s", url, err)
-	}
-	defer rpc.Close()
+func getNetworkID(ctx context.Context, client *ethrpc.Client) (int64, error) {
 	var strNetworkID string
-	err = rpc.Call(&strNetworkID, "net_version")
+	err := client.Call(&strNetworkID, "net_version")
 	if err != nil {
 		return 0, fmt.Errorf("failed to query network ID (to use as chain ID in EIP155 signing): %s", err)
 	}

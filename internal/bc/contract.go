@@ -84,7 +84,6 @@ func (k *Etherium) signAndSendTxn(ctx context.Context, tx *types.Transaction) (s
 	if err != nil {
 		return txHash, fmt.Errorf("failed contractAddress RLP encode: %s", err)
 	}
-	fmt.Printf("hrllo world")
 	err = k.rpc.CallContext(ctx, &txHash, "eth_sendRawTransaction", "0x"+hex.EncodeToString(data))
 	return txHash, err
 }
@@ -111,7 +110,8 @@ func (k *Etherium) waitUntilMined(ctx context.Context, start time.Time, txHash s
 			time.Sleep(retryDelay)
 		}
 	}
-	log.GetLogger(ctx).Info("contract installed and mined", zap.Int("attempts", attempts))
+	log.GetLogger(ctx).Info("contract installed and mined", zap.Int("attempts", attempts),
+		zap.Any("conAddress", receipt.ContractAddress))
 	return &receipt, nil
 }
 
